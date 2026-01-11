@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Skills
 
-Before starting any task, **check if there is an appropriate skill available**. Use the Skill tool to invoke skills for
+> Before starting any task, **check if there is an appropriate skill available**. Use the Skill tool to invoke skills for
 common tasks.
 
 ## Language

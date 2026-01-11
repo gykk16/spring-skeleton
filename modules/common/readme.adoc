@@ -6,80 +6,156 @@
 :toclevels: 2
 :sectnums:
 
-== Overview
+== 개요
 
-공통 유틸리티 및 코드 모듈
+공통 유틸리티와 예외 클래스를 제공합니다.
+다른 모듈에 의존하지 않는 최하위 레이어입니다.
 
-* Response Codes & Exceptions
-* DateTime Utilities
-* String Extensions (Masking)
-* Annotations
+=== 주요 기능
 
-== Codes & Exceptions
+|===
+|기능 |설명
+
+|Response Codes & Exceptions
+|응답 코드와 예외 클래스
+
+|DateTime Utilities
+|날짜/시간 파싱, 포맷팅, 범위 처리
+
+|String Extensions
+|문자열 마스킹 (개인정보 보호)
+
+|Annotations
+|AOP 기반 어노테이션
+|===
+
+== 응답 코드와 예외
 
 === ResponseCode
-응답 코드 인터페이스 (`status`, `message`, `name`)
+
+API 응답 코드 인터페이스입니다.
+
+|===
+|속성 |타입 |설명
+
+|`status`
+|Int
+|HTTP 상태 코드
+
+|`message`
+|String
+|응답 메시지
+
+|`name`
+|String
+|코드 이름
+|===
 
 === ErrorCode / SuccessCode
-기본 제공 응답 코드 Enum
 
-=== Exceptions
+기본 응답 코드 Enum입니다.
+
+* `ErrorCode`: 오류 응답 코드
+* `SuccessCode`: 성공 응답 코드
+
+=== 예외 클래스
+
+|===
+|예외 |용도 |Stack Trace
+
+|`KnownException`
+|예상된 비즈니스 오류 (validation, not found 등)
+|출력 안함
+
+|`BizRuntimeException`
+|처리 불가능한 비즈니스 오류
+|선택 가능
+|===
 
 [source,kotlin]
 ----
-// Stack trace 출력 안함 (Known 오류)
-throw KnownException(ErrorCode.ILLEGAL_ARGUMENT, "message")
+// 예상된 오류: Stack trace 출력 안함
+throw KnownException(ErrorCode.ILLEGAL_ARGUMENT, "잘못된 입력값입니다")
 
-// Stack trace 선택
+// 비즈니스 오류: Stack trace 선택
 throw BizRuntimeException(code, message, printStackTrace = true)
 ----
 
 == Preconditions
 
+조건 실패 시 `KnownException`을 던지는 검증 함수입니다.
+
 [source,kotlin]
 ----
+// 조건 검증
 knownRequired(condition) { "error message" }
+
+// null 검증
 knownRequiredNotNull(value) { "error message" }
+
+// 빈 문자열 검증
 knownNotBlank(string) { "error message" }
 ----
 
-== DateTime
+== 날짜/시간 유틸리티
 
 === DateFormatter
-날짜/시간 파싱 및 포맷팅
+
+날짜/시간 파싱과 포맷팅 확장 함수입니다.
+
+==== 파싱
+
+문자열 → 날짜/시간 객체
 
 [source,kotlin]
 ----
-// Parsing
-"2025-01-01".toDate()
-"20250101".numericToDate()
-"10:30:00".toTime()
+"2025-01-01".toDate()       // LocalDate
+"20250101".numericToDate()  // LocalDate (숫자 형식)
+"10:30:00".toTime()         // LocalTime
+----
 
-// Formatting
+==== 포맷팅
+
+날짜/시간 객체 → 문자열
+
+[source,kotlin]
+----
 localDate.toStr()           // "2025-01-01"
 localDate.toNumericStr()    // "20250101"
 localDate.toKorean()        // "2025년 1월 1일"
+----
 
-// DayOfWeek
+==== 요일 변환
+
+한글 요일 ↔ DayOfWeek 상호 변환
+
+[source,kotlin]
+----
 "월".toDayOfWeek()          // MONDAY
 DayOfWeek.MONDAY.toKorean() // "월요일"
 ----
 
 === DateTime Ranges
 
+날짜/시간 범위 클래스입니다.
+
 [source,kotlin]
 ----
-LocalDateRange.from(start, end)
-LocalTimeRange.from(start, end)
-LocalDateTimeRange.from(start, end)
+// 범위 생성
+val dateRange = LocalDateRange.from(start, end)
+val timeRange = LocalTimeRange.from(start, end)
+val dateTimeRange = LocalDateTimeRange.from(start, end)
 
-range.contains(date)
-range.daysBetween()
+// 범위 검증
+range.contains(date)    // 범위 내 포함 여부
+range.daysBetween()     // 일수 계산
 ----
 
-== String Extensions
+== 문자열 확장 함수
 
-=== Masking
+=== 마스킹
+
+개인정보 마스킹 함수입니다.
 
 [source,kotlin]
 ----
@@ -89,10 +165,14 @@ range.daysBetween()
 "1234567890".maskDefault()   // "12****7890"
 ----
 
-== Annotations
+TIP: `strict = true` 옵션을 사용하면 빈 문자열에 대해 예외를 발생시킵니다.
+
+== 어노테이션
+
+AOP 기반 어노테이션입니다.
 
 |===
-|Annotation |Description
+|어노테이션 |설명
 
 |`@CheckIp(["ip1", "ip2"])`
 |IP 기반 접근 제어
@@ -107,29 +187,42 @@ range.daysBetween()
 |Response body 로깅
 
 |`@ExcludeRequestLog`
-|Request 로깅 제외 (Production)
+|Request 로깅 제외 (Production 환경)
 |===
 
-== Constants
+== 상수
 
 === TraceHeader
+
+트레이스 ID HTTP 헤더 상수입니다.
+
 [source,kotlin]
 ----
 TraceHeader.APP_TRACE_ID    // "X-ZZ-TraceId"
 TraceHeader.X_B3_TRACE_ID   // "X-B3-TraceId"
 ----
 
-=== Exclude Paths
-`FILTER_EXCLUDE_PATH`, `INTERCEPTOR_EXCLUDE_PATH` - 필터/인터셉터 제외 경로
+=== 제외 경로
 
-== Important Notes
+필터/인터셉터 제외 경로입니다.
+
+* `FILTER_EXCLUDE_PATH`: 필터 제외 경로
+* `INTERCEPTOR_EXCLUDE_PATH`: 인터셉터 제외 경로
+
+== 주의 사항
 
 [IMPORTANT]
 ====
-*KnownException* - 예상된 비즈니스 오류에 사용 (stack trace 없이 간단히 로깅)
+**KnownException 사용 시점**
+
+예상된 오류(validation 실패, 데이터 없음)에 사용하세요.
+Stack trace를 출력하지 않아 로그가 간결해집니다.
 ====
 
 [IMPORTANT]
 ====
-*Masking 함수* - 개인정보 마스킹 시 `strict = true` 옵션으로 빈 문자열 검증 가능
+**마스킹 함수 strict 모드**
+
+`strict = true`로 설정하면 빈 문자열 입력 시 예외가 발생합니다.
+데이터 무결성이 중요한 운영 환경에서 사용하세요.
 ====
