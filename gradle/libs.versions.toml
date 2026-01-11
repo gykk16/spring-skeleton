@@ -15,7 +15,7 @@ kotlin-logging = "7.0.13"
 
 # Third-party (not managed by Spring BOM)
 querydsl = "7.1"
-redisson = "4.0.0"
+redisson = "4.1.0"
 lz4 = "1.10.2"
 kotest = "6.0.7"
 springdoc = "3.0.0"
@@ -68,6 +68,7 @@ mysql = { module = "com.mysql:mysql-connector-j" }
 # Cache
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine" }
 redisson-spring-boot-starter = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
+redisson-spring-cache = { module = "org.redisson:redisson-spring-cache", version.ref = "redisson" }
 lz4-java = { module = "at.yawk.lz4:lz4-java", version.ref = "lz4" }
 
 # Jackson (managed by Spring BOM)
@@ -136,6 +137,7 @@ cache = [
     "spring-boot-starter-cache",
     "caffeine",
     "redisson-spring-boot-starter",
+    "redisson-spring-cache",
     "lz4-java"
 ]
 
