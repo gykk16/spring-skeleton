@@ -7,6 +7,10 @@
 :sectlinks:
 :sectnums:
 
+image:https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white[Java]
+image:https://img.shields.io/badge/Kotlin-2.x-7F52FF?logo=kotlin&logoColor=white[Kotlin]
+image:https://img.shields.io/badge/Spring%20Boot-4.x-6DB33F?logo=springboot&logoColor=white[Spring Boot]
+
 == 개요
 
 Spring Boot 4.x와 Kotlin 2.x 기반 멀티 모듈 스켈레톤입니다.
