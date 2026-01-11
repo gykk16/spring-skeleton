@@ -28,7 +28,7 @@ class TestService {
         return "redisCacheTest"
     }
 
-    fun redissonTest(key: String): String = redisGet(
+    fun redissonCacheTest(key: String): String = redisGet(
         key = key
     ) {
         logger.info { "did not hit redisson cache" }

@@ -27,14 +27,14 @@ class TestController(
     }
 
     @GetMapping("/caches/redis")
-    fun redisCacheOldTest(): ResponseEntity<ApiResource<String>> {
+    fun redisCacheableTest(): ResponseEntity<ApiResource<String>> {
         testService.redisCacheableTest("redis-cache-annotation-test")
         return ApiResource.success()
     }
 
     @GetMapping("/caches/redisson")
     fun redissonCacheTest(): ResponseEntity<ApiResource<String>> {
-        testService.redissonTest("redisson-cache-test")
+        testService.redissonCacheTest("redisson-cache-test")
         return ApiResource.success()
     }
 
