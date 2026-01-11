@@ -18,7 +18,7 @@ querydsl = "7.1"
 redisson = "4.1.0"
 lz4 = "1.10.2"
 kotest = "6.0.7"
-springdoc = "3.0.0"
+springdoc = "3.0.1"
 springdoc-kotlin = "1.8.0"
 
 # ####################
