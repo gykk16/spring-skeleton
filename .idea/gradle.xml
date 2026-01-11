@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="testRunner" value="PLATFORM" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="corretto-21" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/modules" />
+            <option value="$PROJECT_DIR$/modules/application" />
+            <option value="$PROJECT_DIR$/modules/application/todo-application" />
+            <option value="$PROJECT_DIR$/modules/bootstrap" />
+            <option value="$PROJECT_DIR$/modules/bootstrap/skeleton-api-app" />
+            <option value="$PROJECT_DIR$/modules/bootstrap/skeleton-worker-app" />
+            <option value="$PROJECT_DIR$/modules/common" />
+            <option value="$PROJECT_DIR$/modules/common-web" />
+            <option value="$PROJECT_DIR$/modules/infrastructure" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

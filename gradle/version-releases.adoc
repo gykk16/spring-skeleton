@@ -1,0 +1,112 @@
+= Library Releases
+:toc:
+:toclevels: 2
+
+== Overview
+
+This document lists GitHub release pages for all libraries in `libs.versions.toml`.
+
+Libraries without explicit versions are managed by Spring Boot BOM.
+
+== Kotlin
+
+|===
+| Library | Version | Release URL
+
+| Kotlin
+| 2.3.0
+| https://github.com/JetBrains/kotlin/releases
+
+| Kotlinx Coroutines
+| 1.10.2
+| https://github.com/Kotlin/kotlinx.coroutines/releases
+
+| Kotlin Logging
+| 7.0.13
+| https://github.com/oshai/kotlin-logging/releases
+
+|===
+
+== Spring
+
+|===
+| Library | Version | Release URL
+
+| Spring Boot
+| 4.0.1
+| https://github.com/spring-projects/spring-boot/releases
+
+| Spring Cloud
+| 2025.1.0
+| https://github.com/spring-cloud/spring-cloud-release/releases
+
+| Spring Dependency Management Plugin
+| 1.1.7
+| https://github.com/spring-gradle-plugins/dependency-management-plugin/releases
+
+|===
+
+== Third-party (not managed by Spring BOM)
+
+|===
+| Library | Version | Release URL
+
+| QueryDSL (OpenFeign fork)
+| 7.1
+| https://github.com/OpenFeign/querydsl/releases
+
+| Redisson
+| 4.0.0
+| https://github.com/redisson/redisson/releases
+
+| LZ4 Java
+| 1.10.2
+| https://github.com/lz4/lz4-java/releases
+
+| Kotest
+| 6.0.7
+| https://github.com/kotest/kotest/releases
+
+| SpringDoc OpenAPI
+| 3.0.0
+| https://github.com/springdoc/springdoc-openapi/releases
+
+| SpringDoc OpenAPI Kotlin
+| 1.8.0
+| https://github.com/springdoc/springdoc-openapi-kotlin/releases
+
+|===
+
+== Managed by Spring BOM (no explicit version needed)
+
+|===
+| Library | Release URL
+
+| Caffeine
+| https://github.com/ben-manes/caffeine/releases
+
+| Lombok
+| https://github.com/projectlombok/lombok/releases
+
+| Micrometer
+| https://github.com/micrometer-metrics/micrometer/releases
+
+| Micrometer Tracing
+| https://github.com/micrometer-metrics/tracing/releases
+
+| Jackson
+| https://github.com/FasterXML/jackson/releases
+
+| H2 Database
+| https://github.com/h2database/h2database/releases
+
+| MySQL Connector/J
+| https://github.com/mysql/mysql-connector-j/releases
+
+| Jakarta Persistence API
+| https://github.com/jakartaee/persistence/releases
+
+| Jakarta Annotation API
+| https://github.com/jakartaee/common-annotations-api/releases
+
+|===

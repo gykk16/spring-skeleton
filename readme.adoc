@@ -1,0 +1,206 @@
+= Spring Boot Skeleton
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+:sectnums:
+
+== Overview
+
+Spring Boot 4.x + Kotlin 기반의 Hexagonal Architecture 스켈레톤 프로젝트입니다.
+
+=== Tech Stack
+
+* Spring Boot 4.x
+* Kotlin 2.x
+* Gradle 9.x (Version Catalog)
+* JDK 21
+
+== Project Structure
+
+[source]
+----
+modules/
+├── common/                     # 공통 유틸리티, 예외, 코드
+├── common-web/                 # 웹 공통 (Filter, Interceptor, Handler)
+├── domain/                     # 도메인 모델, 비즈니스 규칙
+├── application/                # 애플리케이션 서비스
+│   └── todo-application/       # Todo 애플리케이션 (Client, Service)
+├── infrastructure/             # DB, Cache, HTTP Client, 외부 서비스
+└── bootstrap/                  # Spring Boot 앱 모듈
+    ├── skeleton-api-app/       # API 서버
+    └── skeleton-worker-app/    # Worker 서버
+----
+
+=== Hexagonal Architecture
+
+[source]
+----
+┌─────────────────────────────────────────────────────────────┐
+│                         Bootstrap                            │
+│  (skeleton-api-app, skeleton-worker-app)                    │
+├─────────────────────────────────────────────────────────────┤
+│                        common-web                            │
+│  (Filters, Interceptors, ExceptionHandler, ApiResource)     │
+├─────────────────────────────────────────────────────────────┤
+│                        Application                           │
+│  (todo-application: TodoClient, TodoService)                │
+├──────────────────────────┬──────────────────────────────────┤
+│         Domain           │         Infrastructure           │
+│  (Business Rules)        │  (Cache, Redis, RestClient)      │
+├──────────────────────────┴──────────────────────────────────┤
+│                          Common                              │
+│  (Codes, Exceptions, Utils, Extensions)                     │
+└─────────────────────────────────────────────────────────────┘
+----
+
+== Modules
+
+=== common
+
+공통 유틸리티 모듈
+
+* *Codes & Exceptions* - ResponseCode, ErrorCode, KnownException, BizRuntimeException
+* *DateTime* - DateFormatter (파싱/포맷팅/한글), DateTime Ranges
+* *Extensions* - String 마스킹 (이름, 전화번호, 이메일)
+
+link:modules/common/readme.adoc[상세 문서]
+
+=== common-web
+
+웹 공통 인프라 모듈
+
+* *Filters* - ContentCachingFilter, AppTraceFilter (UUID v7 traceId)
+* *Interceptors* - LogInterceptor, LogResponseBodyInterceptor
+* *Exception Handler* - GlobalExceptionHandlerV2
+* *Response* - ApiResource 표준 응답 포맷
+
+link:modules/common-web/readme.adoc[상세 문서]
+
+=== application
+
+애플리케이션 서비스 계층
+
+==== todo-application
+
+외부 API 연동 예제 모듈
+
+* *TodoClient* - `@HttpExchange` 기반 선언적 HTTP Client
+* *TodoService* - 비즈니스 로직 래핑
+* *TodoClientConfig* - `@ImportHttpServices` 설정
+
+=== infrastructure
+
+데이터베이스, 캐시, 외부 서비스 연동 모듈
+
+* *HTTP Client* - RestClient, HttpLoggingInterceptor (Feign 스타일 로깅)
+* *Cache* - Caffeine (L1) + Redis (L2)
+* *Redis Functions* - `redisGet`, `redisSetAsync`, `redisDelete`
+* *Distributed Lock* - `redisLock`
+* *Async* - Virtual Thread + MDC 전파
+
+link:modules/infrastructure/readme.adoc[상세 문서]
+
+=== bootstrap
+
+Spring Boot Application 모듈
+
+|===
+|Module |용도
+
+|`skeleton-api-app`
+|REST API 서버
+
+|`skeleton-worker-app`
+|백그라운드 Worker 서버
+|===
+
+== Quick Start
+
+=== Build
+
+[source,bash]
+----
+./gradlew build
+----
+
+=== Run
+
+[source,bash]
+----
+# API 서버
+./gradlew :modules:bootstrap:skeleton-api-app:bootRun
+
+# Worker 서버
+./gradlew :modules:bootstrap:skeleton-worker-app:bootRun
+----
+
+=== Test
+
+[source,bash]
+----
+./gradlew test
+----
+
+== Configuration
+
+=== gradle.properties
+
+[source,properties]
+----
+projectGroup=io.glory
+projectVersion=0.0.1-SNAPSHOT
+----
+
+=== Version Catalog
+
+라이브러리 버전은 `gradle/libs.versions.toml`에서 관리합니다.
+
+* Spring BOM 관리 라이브러리는 버전 생략
+* Third-party 라이브러리만 버전 명시
+
+link:gradle/version-releases.adoc[라이브러리 릴리즈 정보]
+
+== Creating New Module
+
+=== Application Module
+
+[source]
+----
+modules/application/my-application/
+├── build.gradle.kts
+└── src/main/kotlin/
+    └── io/glory/myapplication/
+        ├── client/          # HTTP Client interfaces
+        └── service/         # Application services
+----
+
+=== Bootstrap App Module
+
+`-app`으로 끝나는 모듈은 자동으로 Spring Boot 플러그인이 적용됩니다.
+
+[source]
+----
+modules/bootstrap/my-api-app/
+├── build.gradle.kts
+└── src/main/kotlin/
+    └── io/glory/myapiapp/
+        ├── api/             # Controllers
+        └── MyApiApplication.kt
+----
+
+=== settings.gradle.kts
+
+[source,kotlin]
+----
+include(
+    "modules:common",
+    "modules:common-web",
+    "modules:domain",
+    "modules:application:my-application",
+    "modules:infrastructure",
+    "modules:bootstrap:my-api-app"
+)
+----

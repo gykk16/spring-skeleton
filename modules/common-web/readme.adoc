@@ -1,0 +1,117 @@
+= Common Web Module
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectnums:
+
+== Overview
+
+Spring Boot 웹 공통 인프라 모듈
+
+* Filters & Interceptors
+* Exception Handler
+* API Response Wrapper
+* AOP Log Trace & IP Whitelist
+
+== Filters
+
+=== ContentCachingFilter
+Request/Response body caching (다중 읽기 지원)
+
+=== AppTraceFilter
+UUID v7 trace ID 생성, MDC/Header 설정
+
+Headers: `X-ZZ-TraceId`, `X-B3-TraceId`, `X-ZZ-Response-Timestamp`
+
+== Interceptors
+
+=== LogInterceptor
+Request 정보 로깅
+
+[source,kotlin]
+----
+@ExcludeRequestLog  // Production 환경에서 로깅 제외
+----
+
+=== LogResponseBodyInterceptor
+Response body 로깅
+
+[source,kotlin]
+----
+@LogResponseBody(maxLength = 500, logLevel = Level.DEBUG)
+----
+
+== Response
+
+=== ApiResource
+표준 API 응답 포맷
+
+[source,kotlin]
+----
+ApiResource.success(data)
+ApiResource.ofPage(page)
+ApiResource.ofCollection(list)
+----
+
+== AOP
+
+=== LogTrace
+메서드 호출 계층 및 실행 시간 추적
+
+[source,kotlin]
+----
+@LogTrace           // 추적 활성화
+@ExcludeLogTrace    // 추적 제외
+----
+
+=== CheckIp
+IP 기반 접근 제어
+
+[source,kotlin]
+----
+@CheckIp(["192.168.1.1"])  // 특정 IP만 허용
+@CheckIp(["*"])            // 모든 IP 허용
+----
+
+== Utilities
+
+* `EnvironmentUtil` - 환경/프로파일 확인 (`isProduction()`, `isLocal()`, etc.)
+* `IpAddrUtil` - 서버/클라이언트 IP 조회
+
+== Important Notes
+
+[IMPORTANT]
+====
+*패키지 변경 시* `TracePointcuts.kt`의 pointcut expression 수정 필요
+
+`execution(* io.glory..*Controller.*(..))` -> 프로젝트 패키지로 변경
+====
+
+[IMPORTANT]
+====
+*비동기 컨텍스트 전파* - MDC, traceId 전파를 위해 `TaskExecutor` 빈 등록 필요:
+
+[source,kotlin]
+----
+@Bean
+fun taskExecutor(decorator: ContextPropagatingTaskDecorator): TaskExecutor {
+    return VirtualThreadTaskExecutor("async-").apply {
+        setTaskDecorator(decorator)
+    }
+}
+----
+====
+
+[NOTE]
+====
+*Profile 설정*
+
+[source,yaml]
+----
+spring:
+  profiles:
+    include: common-web
+----
+====

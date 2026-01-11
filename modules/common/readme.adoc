@@ -1,0 +1,135 @@
+= Common Module
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectnums:
+
+== Overview
+
+공통 유틸리티 및 코드 모듈
+
+* Response Codes & Exceptions
+* DateTime Utilities
+* String Extensions (Masking)
+* Annotations
+
+== Codes & Exceptions
+
+=== ResponseCode
+응답 코드 인터페이스 (`status`, `message`, `name`)
+
+=== ErrorCode / SuccessCode
+기본 제공 응답 코드 Enum
+
+=== Exceptions
+
+[source,kotlin]
+----
+// Stack trace 출력 안함 (Known 오류)
+throw KnownException(ErrorCode.ILLEGAL_ARGUMENT, "message")
+
+// Stack trace 선택
+throw BizRuntimeException(code, message, printStackTrace = true)
+----
+
+== Preconditions
+
+[source,kotlin]
+----
+knownRequired(condition) { "error message" }
+knownRequiredNotNull(value) { "error message" }
+knownNotBlank(string) { "error message" }
+----
+
+== DateTime
+
+=== DateFormatter
+날짜/시간 파싱 및 포맷팅
+
+[source,kotlin]
+----
+// Parsing
+"2025-01-01".toDate()
+"20250101".numericToDate()
+"10:30:00".toTime()
+
+// Formatting
+localDate.toStr()           // "2025-01-01"
+localDate.toNumericStr()    // "20250101"
+localDate.toKorean()        // "2025년 1월 1일"
+
+// DayOfWeek
+"월".toDayOfWeek()          // MONDAY
+DayOfWeek.MONDAY.toKorean() // "월요일"
+----
+
+=== DateTime Ranges
+
+[source,kotlin]
+----
+LocalDateRange.from(start, end)
+LocalTimeRange.from(start, end)
+LocalDateTimeRange.from(start, end)
+
+range.contains(date)
+range.daysBetween()
+----
+
+== String Extensions
+
+=== Masking
+
+[source,kotlin]
+----
+"홍길동".maskKoreanName()     // "홍*동"
+"01012345678".maskPhone()    // "****5678"
+"test@mail.com".maskEmail()  // "te***@mail.com"
+"1234567890".maskDefault()   // "12****7890"
+----
+
+== Annotations
+
+|===
+|Annotation |Description
+
+|`@CheckIp(["ip1", "ip2"])`
+|IP 기반 접근 제어
+
+|`@LogTrace`
+|메서드 호출 추적 활성화
+
+|`@ExcludeLogTrace`
+|메서드 호출 추적 제외
+
+|`@LogResponseBody`
+|Response body 로깅
+
+|`@ExcludeRequestLog`
+|Request 로깅 제외 (Production)
+|===
+
+== Constants
+
+=== TraceHeader
+[source,kotlin]
+----
+TraceHeader.APP_TRACE_ID    // "X-ZZ-TraceId"
+TraceHeader.X_B3_TRACE_ID   // "X-B3-TraceId"
+----
+
+=== Exclude Paths
+`FILTER_EXCLUDE_PATH`, `INTERCEPTOR_EXCLUDE_PATH` - 필터/인터셉터 제외 경로
+
+== Important Notes
+
+[IMPORTANT]
+====
+*KnownException* - 예상된 비즈니스 오류에 사용 (stack trace 없이 간단히 로깅)
+====
+
+[IMPORTANT]
+====
+*Masking 함수* - 개인정보 마스킹 시 `strict = true` 옵션으로 빈 문자열 검증 가능
+====

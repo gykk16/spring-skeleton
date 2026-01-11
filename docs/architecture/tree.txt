@@ -1,0 +1,14 @@
+├── settings.gradle.kts
+├── build.gradle.kts
+│
+└── modules/
+    ├── application/
+    │
+    ├── bootstrap/
+    │
+    ├── common/
+    │
+    ├── infrastructure/
+    │
+    └── /
+    
