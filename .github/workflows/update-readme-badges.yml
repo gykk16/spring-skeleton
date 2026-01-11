@@ -22,10 +22,10 @@ jobs:
         run: |
           TOML_FILE="gradle/libs.versions.toml"
 
-          # Extract versions using grep and sed
-          JAVA_VERSION=$(grep -E '^java\s*=' "$TOML_FILE" | sed 's/.*"\(.*\)"/\1/')
-          KOTLIN_VERSION=$(grep -E '^kotlin\s*=' "$TOML_FILE" | sed 's/.*"\(.*\)"/\1/')
-          SPRING_BOOT_VERSION=$(grep -E '^spring-boot\s*=' "$TOML_FILE" | sed 's/.*"\(.*\)"/\1/')
+          # Extract versions using grep and sed (match only lines with quoted values)
+          JAVA_VERSION=$(grep -E '^java\s*=\s*"' "$TOML_FILE" | sed 's/.*"\(.*\)"/\1/')
+          KOTLIN_VERSION=$(grep -E '^kotlin\s*=\s*"' "$TOML_FILE" | sed 's/.*"\(.*\)"/\1/')
+          SPRING_BOOT_VERSION=$(grep -E '^spring-boot\s*=\s*"' "$TOML_FILE" | sed 's/.*"\(.*\)"/\1/')
 
           echo "java=$JAVA_VERSION" >> $GITHUB_OUTPUT
           echo "kotlin=$KOTLIN_VERSION" >> $GITHUB_OUTPUT
