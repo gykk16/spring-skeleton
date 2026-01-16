@@ -31,18 +31,22 @@ fun LocalDate.isPast(): Boolean = this < LocalDate.now()
 fun LocalDate.isFuture(): Boolean = this > LocalDate.now()
 
 /**
+ * @param targetDate the date to compare with (default: today)
  * @return age in years
  */
-fun LocalDate.getAge(): Int = this.getAge(LocalDate.now())
+@JvmOverloads
+fun LocalDate.getAge(targetDate: LocalDate = LocalDate.now()): Int {
+    return Period.between(this, targetDate).years
+}
 
 /**
- * @param targetDate the date to compare with
- * @return age in years
+ * 한국 나이를 계산합니다.
+ * 한국 나이 = 기준년도 - 출생년도 + 1
+ *
+ * @param targetDate 기준 날짜 (기본값: 오늘)
+ * @return 한국 나이 (세는 나이)
  */
-fun LocalDate.getAge(targetDate: LocalDate): Int {
-//    var age = targetDate.year - this.year
-//    if (targetDate < this.withYear(targetDate.year)) {
-//        age--
-//    }
-    return Period.between(this, targetDate).years
+@JvmOverloads
+fun LocalDate.getKoreanAge(targetDate: LocalDate = LocalDate.now()): Int {
+    return targetDate.year - this.year + 1
 }
