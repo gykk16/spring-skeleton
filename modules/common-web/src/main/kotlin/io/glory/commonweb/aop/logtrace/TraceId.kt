@@ -7,24 +7,21 @@ import kotlin.uuid.Uuid
 
 private const val FIRST_LEVEL = 1
 
-class TraceId {
-
-    @OptIn(ExperimentalUuidApi::class)
-    val id: String = MDC.get(APP_TRACE_ID) ?: Uuid.generateV7().toString()
-
-    var level: Int = FIRST_LEVEL
-        private set
-
+/**
+ * Immutable trace identifier for tracking method call hierarchy.
+ *
+ * @property id unique trace ID (from MDC or generated UUID v7)
+ * @property level current depth in call hierarchy (1 = top level)
+ */
+data class TraceId @OptIn(ExperimentalUuidApi::class) constructor(
+    val id: String = MDC.get(APP_TRACE_ID) ?: Uuid.generateV7().toString(),
+    val level: Int = FIRST_LEVEL,
+) {
     val isFirstLevel: Boolean
         get() = level == FIRST_LEVEL
 
-    fun nextLevel(): TraceId {
-        level++
-        return this
-    }
+    fun nextLevel(): TraceId = copy(level = level + 1)
 
-    fun prevLevel(): TraceId {
-        level--
-        return this
-    }
+    fun prevLevel(): TraceId = copy(level = level - 1)
+
 }

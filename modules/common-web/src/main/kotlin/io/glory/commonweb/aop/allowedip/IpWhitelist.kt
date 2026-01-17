@@ -3,10 +3,22 @@ package io.glory.commonweb.aop.allowedip
 /**
  * IP whitelist checker supporting exact match, wildcard patterns, and CIDR notation.
  *
- * Supported formats:
- * - Exact: `192.168.1.100`
- * - Wildcard: `192.168.*.*`, `*`
- * - CIDR: `192.168.0.0/24`, `10.0.0.0/8`
+ * ## Supported Formats
+ * - **Exact**: `192.168.1.100`
+ * - **Wildcard**: `192.168.*.*`, `*`
+ * - **CIDR**: `192.168.0.0/24`, `10.0.0.0/8`
+ *
+ * ## Usage
+ * ```kotlin
+ * // Check if IP is local/loopback
+ * IpWhitelist.isWhitelisted("127.0.0.1")  // true
+ *
+ * // Check against custom patterns
+ * IpWhitelist.isWhitelisted("192.168.1.100", listOf("192.168.0.0/16"))  // true
+ *
+ * // Check single pattern match
+ * IpWhitelist.matches("192.168.1.100", "192.168.*.*")  // true
+ * ```
  */
 object IpWhitelist {
 
@@ -15,14 +27,33 @@ object IpWhitelist {
     private const val IPV4_OCTET_COUNT = 4
     private const val IPV4_BIT_LENGTH = 32
 
-    val localIps = listOf("127.0.0.1", "localhost", "0:0:0:0:0:0:0:1", "::1")
+    /** Local/loopback IP addresses (IPv4 and IPv6). */
+    val LOCAL_IPS: List<String> = listOf("127.0.0.1", "localhost", "0:0:0:0:0:0:0:1", "::1")
 
-    val whitelistIps: List<String> = localIps
+    /**
+     * Checks if the IP matches any of the given patterns.
+     *
+     * @param ip the IP address to check
+     * @param patterns list of patterns to match against (default: [LOCAL_IPS])
+     * @return true if IP matches any pattern
+     */
+    fun isWhitelisted(ip: String, patterns: List<String> = LOCAL_IPS): Boolean =
+        patterns.any { pattern -> matches(ip, pattern) }
 
-    fun isWhitelisted(ip: String): Boolean =
-        whitelistIps.any { pattern -> matchesIpPattern(ip, pattern) }
-
-    private fun matchesIpPattern(ip: String, pattern: String): Boolean {
+    /**
+     * Checks if the IP matches the given pattern.
+     *
+     * Supports:
+     * - Exact match: `192.168.1.100`
+     * - Global wildcard: `*`
+     * - Wildcard octets: `192.168.*.*`
+     * - CIDR notation: `192.168.0.0/24`
+     *
+     * @param ip the IP address to check
+     * @param pattern the pattern to match against
+     * @return true if IP matches the pattern
+     */
+    fun matches(ip: String, pattern: String): Boolean {
         if (pattern == WILDCARD) return true
 
         // CIDR notation (e.g., 192.168.0.0/24)

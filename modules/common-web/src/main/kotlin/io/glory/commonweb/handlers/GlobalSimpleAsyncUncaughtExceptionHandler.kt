@@ -6,25 +6,27 @@ import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler
 import org.springframework.stereotype.Component
 import java.lang.reflect.Method
 
+private val logger = KotlinLogging.logger {}
+
+/**
+ * Async exception handler that logs [KnownException] at DEBUG level.
+ */
 @Component
 class GlobalSimpleAsyncUncaughtExceptionHandler : SimpleAsyncUncaughtExceptionHandler() {
 
-    private val logger = KotlinLogging.logger {}
+    init {
+        logger.info { "# ==> ${javaClass.simpleName} initialized" }
+    }
 
     override fun handleUncaughtException(
         ex: Throwable,
         method: Method,
-        vararg params: Any?
+        vararg params: Any?,
     ) {
         if (ex is KnownException) {
-            logger.debug(ex) { ex.simplePrint() }
+            logger.debug(ex) { ex.describe() }
         } else {
             super.handleUncaughtException(ex, method, *params)
         }
     }
-
-    init {
-        logger.info { "# ==> ${this.javaClass.simpleName} initialized" }
-    }
-
 }

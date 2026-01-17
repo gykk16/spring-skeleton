@@ -5,34 +5,29 @@ import io.glory.common.exceptions.KnownException
 
 private val logger = KotlinLogging.logger {}
 
-private const val START_PREFIX = "--> "
-private const val END_PREFIX = "<-- "
-private const val EX_PREFIX = "<X- "
-private const val INDENT = "|   "
-private const val BRANCH = "|"
+private const val START_PREFIX = "|--> "
+private const val END_PREFIX = "|<-- "
+private const val EX_PREFIX = "|<X- "
+private const val INDENT = "|    "
 private const val NANOS_PER_MILLI = 1_000_000L
 
 /**
  * Thread-local based log trace implementation.
  *
  * Tracks method call hierarchy and execution time using ThreadLocal.
+ * Outputs tree-style logs showing call depth and elapsed time.
  */
 class ThreadLocalLogTrace : LogTrace {
 
     private val traceIdHolder = ThreadLocal<TraceId>()
 
     override fun begin(message: String): TraceStatus {
-        syncTraceId()
-        val traceId = traceIdHolder.get()
+        val traceId = syncTraceId()
         val prefix = buildPrefix(START_PREFIX, traceId.level)
 
-        logger.debug { "# $prefix$message" }
+        logger.debug { "$prefix$message" }
 
-        return TraceStatus(
-            traceId = traceId,
-            startNanos = System.nanoTime(),
-            message = message
-        )
+        return TraceStatus(traceId, System.nanoTime(), message)
     }
 
     override fun end(status: TraceStatus) = complete(status, null)
@@ -49,15 +44,17 @@ class ThreadLocalLogTrace : LogTrace {
 
     private fun logCompletion(prefix: String, message: String, elapsedMs: Long, e: Exception?) {
         when (e) {
-            null -> logger.debug { "# $prefix$message , elapsed=${elapsedMs}ms" }
-            is KnownException -> logger.debug { "# $prefix$message , elapsed=${elapsedMs}ms" }
-            else -> logger.warn { "# $prefix$message , elapsed=${elapsedMs}ms , ex=${e.javaClass.simpleName} ${e.message}" }
+            null -> logger.debug { "$prefix$message elapsed=${elapsedMs}ms" }
+            is KnownException -> logger.debug { "$prefix$message elapsed=${elapsedMs}ms" }
+            else -> logger.warn { "$prefix$message elapsed=${elapsedMs}ms ex=${e.javaClass.simpleName}: ${e.message}" }
         }
     }
 
-    private fun syncTraceId() {
+    private fun syncTraceId(): TraceId {
         val current = traceIdHolder.get()
-        traceIdHolder.set(current?.nextLevel() ?: TraceId())
+        val next = current?.nextLevel() ?: TraceId()
+        traceIdHolder.set(next)
+        return next
     }
 
     private fun releaseTraceId() {
@@ -69,8 +66,6 @@ class ThreadLocalLogTrace : LogTrace {
         }
     }
 
-    private fun buildPrefix(prefix: String, level: Int): String =
-        (0 until level).joinToString(separator = "") { i ->
-            if (i == level - 1) "$BRANCH$prefix" else INDENT
-        }
+    private fun buildPrefix(prefix: String, level: Int): String = INDENT.repeat(level - 1) + prefix
+
 }

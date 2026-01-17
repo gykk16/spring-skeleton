@@ -3,7 +3,14 @@ package io.glory.commonweb.aop.logtrace
 import org.aspectj.lang.annotation.Pointcut
 
 /**
- * Pointcut definitions for log tracing
+ * Pointcut definitions for log tracing.
+ *
+ * Traces:
+ * - All `*Controller` classes
+ * - All `*Service` classes
+ * - Methods annotated with `@LogTrace`
+ *
+ * Excludes methods annotated with `@ExcludeLogTrace`.
  */
 class TracePointcuts {
 
@@ -24,4 +31,5 @@ class TracePointcuts {
 
     @Pointcut("(allController() || allService() || logTraceAnnotation()) && !excludeLogTraceAnnotation()")
     fun all() = Unit
+
 }

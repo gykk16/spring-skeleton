@@ -3,59 +3,54 @@ package io.glory.commonweb.utils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.glory.common.codes.ResponseCode
 import jakarta.servlet.http.HttpServletRequest
-import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
 
 /**
- * Log error message printer
+ * Utility for logging error information.
  */
 object ErrorLogPrintUtil {
 
-    private val jsonMapper = JsonMapper.builder().build()
-
     /**
-     * log error message
+     * Logs error with request context.
      *
      * @param request HttpServletRequest
      * @param code ResponseCode
      * @param e Exception
-     * @param printTrace log trace stack
+     * @param printTrace whether to include stack trace
      */
     @JvmOverloads
     @JvmStatic
-    fun logError(request: HttpServletRequest, code: ResponseCode, e: Exception, printTrace: Boolean = false) {
-        val method = request.method
-        val requestURI = request.requestURI
+    fun logError(
+        request: HttpServletRequest,
+        code: ResponseCode,
+        e: Exception,
+        printTrace: Boolean = false,
+    ) {
         val rootCause = getRootCause(e)
+        val message = buildErrorMessage(request, code, e, rootCause)
 
-        logErrorV2(method, requestURI, request, code, e, rootCause, printTrace)
+        if (printTrace) {
+            logger.error(e) { message }
+        } else {
+            logger.error { message }
+        }
     }
 
-    private fun logErrorV2(
-        method: String?,
-        requestURI: String?,
+    private fun buildErrorMessage(
         request: HttpServletRequest,
         code: ResponseCode,
         exception: Exception,
         rootCause: Throwable,
-        printTrace: Boolean
-    ) {
-        val clientIp = IpAddrUtil.getClientIp(request)
-        val serverIp = IpAddrUtil.serverIp
-        buildString {
-            append("# ==> ERROR INFO ::\n")
-            append("RequestURI: $method , $requestURI\n")
-            append("ServerIp = $serverIp , ClientIp = $clientIp\n")
-            append("Code: [${code.name}] , Message: ${code.message}\n")
-            append("Exception: ${exception.javaClass.simpleName} , Cause: ${exception.message}\n")
-            append("RootCause: ${rootCause.javaClass.simpleName} , Cause: ${rootCause.message}")
-        }.let { if (printTrace) logger.error(exception) { it } else logger.error { it } }
+    ): String = buildString {
+        appendLine("ERROR INFO ::")
+        appendLine("RequestURI: ${request.method}, ${request.requestURI}")
+        appendLine("ServerIp = ${IpAddrUtil.serverIp}, ClientIp = ${IpAddrUtil.getClientIp(request)}")
+        appendLine(code.description())
+        appendLine("Exception: ${exception.javaClass.simpleName} , Cause: ${exception.message}")
+        append("RootCause: ${rootCause.javaClass.simpleName} , Cause: ${rootCause.message}")
     }
 
-    /**
-     * @return root cause of exception
-     */
     private tailrec fun getRootCause(throwable: Throwable): Throwable {
         val cause = throwable.cause
         return if (cause != null && cause !== throwable) {
@@ -64,5 +59,4 @@ object ErrorLogPrintUtil {
             throwable
         }
     }
-
 }
