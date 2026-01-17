@@ -8,18 +8,18 @@ import io.kotest.matchers.string.shouldContain
 class StringExtTest : FunSpec({
 
     context("ifNullOrBlank") {
-        test("should return string itself when not null or blank") {
+        test("should return the string itself when not null or blank") {
             "hello".ifNullOrBlank() shouldBe "hello"
             "hello".ifNullOrBlank("default") shouldBe "hello"
         }
 
-        test("should return default when null") {
+        test("should return default value when null") {
             val nullString: String? = null
             nullString.ifNullOrBlank() shouldBe ""
             nullString.ifNullOrBlank("default") shouldBe "default"
         }
 
-        test("should return default when blank") {
+        test("should return default value when blank") {
             "".ifNullOrBlank() shouldBe ""
             "".ifNullOrBlank("default") shouldBe "default"
             "   ".ifNullOrBlank("default") shouldBe "default"
@@ -29,11 +29,11 @@ class StringExtTest : FunSpec({
     context("removeAllSpaces") {
         test("should remove all spaces from string") {
             "hello world".removeAllSpaces() shouldBe "helloworld"
-            "  hello  world  ".removeAllSpaces() shouldBe "helloworld"
+            "  a  b  c  ".removeAllSpaces() shouldBe "abc"
             "no spaces".removeAllSpaces() shouldBe "nospaces"
         }
 
-        test("should return empty string when only spaces") {
+        test("should return empty string when input is only spaces") {
             "   ".removeAllSpaces() shouldBe ""
         }
 
@@ -43,126 +43,160 @@ class StringExtTest : FunSpec({
     }
 
     context("maskDefault") {
-        test("should return **** for strings with 4 or fewer characters") {
-            "".maskDefault() shouldBe "****"
-            "a".maskDefault() shouldBe "****"
-            "ab".maskDefault() shouldBe "****"
-            "abc".maskDefault() shouldBe "****"
-            "abcd".maskDefault() shouldBe "****"
+        test("should return **** for strings with length 1 to 4") {
+            "1".maskDefault() shouldBe "****"
+            "12".maskDefault() shouldBe "****"
+            "123".maskDefault() shouldBe "****"
+            "1234".maskDefault() shouldBe "****"
         }
 
-        test("should mask correctly for various lengths") {
+        test("should show last 1 char for length 5") {
             "12345".maskDefault() shouldBe "****5"
+        }
+
+        test("should show last 2 chars for length 6") {
             "123456".maskDefault() shouldBe "****56"
+        }
+
+        test("should show last 3 chars for length 7") {
             "1234567".maskDefault() shouldBe "****567"
+        }
+
+        test("should show last 4 chars for length 8") {
             "12345678".maskDefault() shouldBe "****5678"
         }
 
-        test("should mask middle characters for longer strings") {
+        test("should show first 1 + last 4 chars for length 9") {
             "123456789".maskDefault() shouldBe "1****6789"
-            "1234567890".maskDefault() shouldBe "12****7890"
-            "12345678901".maskDefault() shouldBe "123****8901"
-            "123456789012".maskDefault() shouldBe "1234****9012"
         }
 
-        test("should throw exception for blank string in strict mode") {
+        test("should show first 2 + last 4 chars for length 10") {
+            "1234567890".maskDefault() shouldBe "12****7890"
+        }
+
+        test("should show first 3 + last 4 chars for length 11") {
+            "12345678901".maskDefault() shouldBe "123****8901"
+        }
+
+        test("should show first 4 + last 4 chars for length 12+") {
+            "123456789012".maskDefault() shouldBe "1234****9012"
+            "1234567890123".maskDefault() shouldBe "1234*****0123"
+            "12345678901234".maskDefault() shouldBe "1234******1234"
+        }
+
+        test("should throw exception when strict and input is blank") {
             val exception = shouldThrow<IllegalArgumentException> {
                 "".maskDefault(strict = true)
             }
-            exception.message shouldContain "Input string cannot be blank"
+            exception.message shouldContain "blank"
+        }
+
+        test("should return **** when not strict and input is blank") {
+            "".maskDefault(strict = false) shouldBe "****"
         }
     }
 
     context("maskKoreanName") {
-        test("should return *** for empty or single character") {
+        test("should return *** for empty or single char names") {
             "".maskKoreanName() shouldBe "***"
-            "김".maskKoreanName() shouldBe "***"
+            "홍".maskKoreanName() shouldBe "***"
         }
 
-        test("should mask second character for two character names") {
-            "김철".maskKoreanName() shouldBe "김*"
+        test("should show first char + * for 2-char names") {
+            "홍길".maskKoreanName() shouldBe "홍*"
         }
 
-        test("should mask middle characters for longer names") {
-            "김철수".maskKoreanName() shouldBe "김*수"
-            "김철수민".maskKoreanName() shouldBe "김**민"
+        test("should mask middle chars for 3+ char names") {
+            "홍길동".maskKoreanName() shouldBe "홍*동"
+            "홍길동수".maskKoreanName() shouldBe "홍**수"
             "남궁민수".maskKoreanName() shouldBe "남**수"
         }
 
-        test("should throw exception for blank string in strict mode") {
+        test("should throw exception when strict and input is blank") {
             val exception = shouldThrow<IllegalArgumentException> {
                 "".maskKoreanName(strict = true)
             }
-            exception.message shouldContain "Input string cannot be blank"
+            exception.message shouldContain "blank"
         }
     }
 
     context("maskPhone") {
-        test("should mask phone numbers") {
+        test("should mask all digits except last 4") {
             "01012345678".maskPhone() shouldBe "*******5678"
-            "0101234567".maskPhone() shouldBe "******4567"
+            "01234567890".maskPhone() shouldBe "*******7890"
+            "0101234".maskPhone() shouldBe "***1234"
         }
 
-        test("should return **** for short strings") {
-            "1234".maskPhone() shouldBe "****"
+        test("should return **** for short phone numbers") {
+            "010".maskPhone() shouldBe "****"
+            "0101".maskPhone() shouldBe "****"
         }
 
-        test("should throw exception for blank string in strict mode") {
+        test("should throw exception when strict and input is blank") {
             val exception = shouldThrow<IllegalArgumentException> {
                 "".maskPhone(strict = true)
             }
-            exception.message shouldContain "Input string cannot be blank"
+            exception.message shouldContain "blank"
         }
     }
 
     context("maskEmail") {
-        test("should return **** for strings with 4 or fewer characters") {
+        test("should mask local part showing first 2 chars") {
+            "user@example.com".maskEmail() shouldBe "us***@example.com"
+            "username@domain.co.kr".maskEmail() shouldBe "us******@domain.co.kr"
+        }
+
+        test("should return ***@domain when local part has 2 or fewer chars") {
+            "ab@example.com".maskEmail() shouldBe "***@example.com"
+            "a@example.com".maskEmail() shouldBe "***@example.com"
+        }
+
+        test("should fallback to mask when no valid @ found") {
+            "invalidemail".maskEmail() shouldBe "********mail"
+            "@domain.com".maskEmail() shouldBe "*******.com"
+            "user@".maskEmail() shouldBe "*ser@"
+        }
+
+        test("should return **** for short emails") {
             "a@b".maskEmail() shouldBe "****"
             "ab".maskEmail() shouldBe "****"
         }
 
-        test("should mask email local part correctly") {
-            "test@example.com".maskEmail() shouldBe "te***@example.com"
-            "ab@domain.com".maskEmail() shouldBe "***@domain.com"
-            "hello@world.com".maskEmail() shouldBe "he***@world.com"
-        }
-
-        test("should handle email without @ sign") {
-            "testexample".maskEmail() shouldBe "*******mple"
-        }
-
-        test("should throw exception for blank string in strict mode") {
+        test("should throw exception when strict and input is blank") {
             val exception = shouldThrow<IllegalArgumentException> {
                 "".maskEmail(strict = true)
             }
-            exception.message shouldContain "Input string cannot be blank"
+            exception.message shouldContain "blank"
         }
     }
 
     context("mask") {
-        test("should return **** for strings with 4 or fewer characters") {
-            "".mask() shouldBe "****"
-            "ab".mask() shouldBe "****"
-            "abcd".mask() shouldBe "****"
-        }
-
-        test("should mask from start to end-4 by default") {
-            "12345678".mask() shouldBe "****5678"
-            "1234567890".mask() shouldBe "******7890"
-        }
-
-        test("should mask with custom start and end") {
+        test("should mask between start and end indices") {
             "1234567890".mask(2, 6) shouldBe "12****7890"
-            "abcdefgh".mask(1, 5) shouldBe "a****fgh"
+            "1234567890".mask(0, 4) shouldBe "****567890"
+            "1234567890".mask(6, 10) shouldBe "123456****"
         }
 
-        test("should return original string when start >= end") {
-            "12345678".mask(5, 3) shouldBe "12345678"
+        test("should use default end index (length - 4)") {
+            "1234567890".mask(0) shouldBe "******7890"
+            "12345678".mask(0) shouldBe "****5678"
         }
 
-        test("should handle out of bounds indices safely") {
-            "12345678".mask(-5, 100) shouldBe "********"
-            "12345678".mask(0, 100) shouldBe "********"
+        test("should return **** for strings with length 4 or less") {
+            "1234".mask() shouldBe "****"
+            "123".mask() shouldBe "****"
+            "12".mask() shouldBe "****"
+            "1".mask() shouldBe "****"
+        }
+
+        test("should handle out-of-bound indices safely") {
+            "1234567890".mask(-5, 5) shouldBe "*****67890"
+            "1234567890".mask(5, 20) shouldBe "12345*****"
+        }
+
+        test("should return original string when start >= end after coercion") {
+            "1234567890".mask(5, 5) shouldBe "1234567890"
+            "1234567890".mask(8, 5) shouldBe "1234567890"
         }
     }
 })

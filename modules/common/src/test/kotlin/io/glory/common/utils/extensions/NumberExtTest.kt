@@ -9,79 +9,93 @@ import io.kotest.matchers.string.shouldContain
 
 class NumberExtTest : FunSpec({
 
-    context("zeroOrOne") {
+    context("randomZeroOrOne") {
         test("should return 0 or 1") {
             repeat(100) {
-                val result = 0.zeroOrOne()
+                val result = randomZeroOrOne()
                 result shouldBeInRange 0..1
             }
         }
     }
 
-    context("zeroOrOneOrTwo") {
+    context("randomZeroToTwo") {
         test("should return 0, 1, or 2") {
             repeat(100) {
-                val result = 0.zeroOrOneOrTwo()
+                val result = randomZeroToTwo()
                 result shouldBeInRange 0..2
             }
         }
     }
 
-    context("randomBetween") {
+    context("randomIntBetween") {
         test("should return value within specified range") {
             repeat(100) {
-                val result = 0.randomBetween(10, 20)
+                val result = randomIntBetween(10, 20)
                 result shouldBeInRange 10..20
             }
         }
 
         test("should return exact value when min equals max") {
-            val result = 0.randomBetween(5, 5)
+            val result = randomIntBetween(5, 5)
             result shouldBe 5
         }
 
         test("should work with negative numbers") {
             repeat(100) {
-                val result = 0.randomBetween(-10, -5)
+                val result = randomIntBetween(-10, -5)
                 result shouldBeInRange -10..-5
             }
         }
     }
 
+    context("randomLongBetween") {
+        test("should return value within specified range") {
+            repeat(100) {
+                val result = randomLongBetween(100L, 200L)
+                result shouldBeInRange 100L..200L
+            }
+        }
+
+        test("should return exact value when min equals max") {
+            val result = randomLongBetween(50L, 50L)
+            result shouldBe 50L
+        }
+
+        test("should work with negative numbers") {
+            repeat(100) {
+                val result = randomLongBetween(-100L, -50L)
+                result shouldBeInRange -100L..-50L
+            }
+        }
+
+        test("should work with large numbers") {
+            repeat(100) {
+                val result = randomLongBetween(1_000_000_000L, 2_000_000_000L)
+                result shouldBeInRange 1_000_000_000L..2_000_000_000L
+            }
+        }
+    }
+
     context("randomOfLength") {
-        test("should return number with correct length for length 1") {
+        test("should return number with correct length for DigitLength.ONE") {
             repeat(50) {
-                val result = 0.randomOfLength(1)
+                val result = randomOfLength(DigitLength.ONE)
                 result shouldBeInRange 1L..9L
             }
         }
 
-        test("should return number with correct length for length 5") {
+        test("should return number with correct length for DigitLength.FIVE") {
             repeat(50) {
-                val result = 0.randomOfLength(5)
+                val result = randomOfLength(DigitLength.FIVE)
                 result shouldBeInRange 10000L..99999L
             }
         }
 
-        test("should return number with correct length for length 10") {
+        test("should return number with correct length for DigitLength.TEN") {
             repeat(50) {
-                val result = 0.randomOfLength(10)
+                val result = randomOfLength(DigitLength.TEN)
                 result shouldBeInRange 1000000000L..9999999999L
             }
-        }
-
-        test("should throw exception for length less than 1") {
-            val exception = shouldThrow<IllegalArgumentException> {
-                0.randomOfLength(0)
-            }
-            exception.message shouldContain "Length must be between 1 and 10"
-        }
-
-        test("should throw exception for length greater than 10") {
-            val exception = shouldThrow<IllegalArgumentException> {
-                0.randomOfLength(11)
-            }
-            exception.message shouldContain "Length must be between 1 and 10"
         }
     }
 
@@ -109,11 +123,11 @@ class NumberExtTest : FunSpec({
             (-1234.56).commaSeparated(2) shouldBe "-1,234.56"
         }
 
-        test("should throw exception for negative position") {
+        test("should throw exception for negative decimal places") {
             val exception = shouldThrow<IllegalArgumentException> {
                 1000.commaSeparated(-1)
             }
-            exception.message shouldContain "Position must be non-negative"
+            exception.message shouldContain "Decimal places must be non-negative"
         }
     }
 })
