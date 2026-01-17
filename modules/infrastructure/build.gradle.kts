@@ -19,6 +19,9 @@ dependencies {
     // Cache (Caffeine, Redisson, LZ4)
     implementation(rootProject.libs.bundles.cache)
 
+    // Apache POI (Excel Export)
+    implementation(rootProject.libs.poi.ooxml)
+
     // RestClient (HTTP Client with tracing support)
     implementation(rootProject.libs.spring.boot.starter.restclient)
     implementation(rootProject.libs.spring.boot.starter.aspectj)
