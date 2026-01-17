@@ -1,10 +1,6 @@
 package io.glory.infrastructure.export.excel
 
-import io.glory.infrastructure.export.ColumnMeta
-import io.glory.infrastructure.export.ColumnMetaExtractor
-import io.glory.infrastructure.export.DataExporter
-import io.glory.infrastructure.export.SheetMeta
-import io.glory.infrastructure.export.ValueConverter
+import io.glory.infrastructure.export.*
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.xssf.streaming.SXSSFSheet
 import org.apache.poi.xssf.streaming.SXSSFWorkbook
@@ -59,7 +55,7 @@ class ExcelExporter(
         dataWriter: (SXSSFSheet, List<ColumnMeta>, SheetMeta, CellStyleFactory) -> Unit,
     ) {
         val workbook = SXSSFWorkbook(rowAccessWindowSize)
-        try {
+        workbook.use { workbook ->
             val sheetMeta = ColumnMetaExtractor.extractSheetMeta(clazz)
             val columnMetas = ColumnMetaExtractor.extractColumnMetas(clazz)
             val styleFactory = CellStyleFactory(workbook)
@@ -76,8 +72,6 @@ class ExcelExporter(
             setColumnWidths(sheet, columnMetas, sheetMeta)
 
             workbook.write(outputStream)
-        } finally {
-            workbook.close()
         }
     }
 
@@ -128,6 +122,7 @@ class ExcelExporter(
 
         columnMetas.forEach { meta ->
             val cell = row.createCell(colIndex++)
+
             @Suppress("UNCHECKED_CAST")
             val property = meta.property as KProperty1<T, *>
             val value = property.get(item)
