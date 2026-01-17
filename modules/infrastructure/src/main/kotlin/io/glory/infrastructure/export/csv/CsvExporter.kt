@@ -23,12 +23,19 @@ import kotlin.reflect.KProperty1
  *
  * - 스트리밍 방식으로 대용량 데이터 처리
  * - Excel과 달리 행 제한 없음
+ * - BOM 옵션으로 Excel 호환성 지원
+ *
+ * @property charset 문자 인코딩 (기본: UTF-8)
+ * @property delimiter 구분자 (기본: 쉼표)
+ * @property includeHeader 헤더 포함 여부
+ * @property includeBom UTF-8 BOM 포함 여부 (Excel 호환용)
  */
 @Component
 class CsvExporter(
     private val charset: Charset = Charsets.UTF_8,
     private val delimiter: Char = DEFAULT_DELIMITER,
     private val includeHeader: Boolean = true,
+    private val includeBom: Boolean = false,
 ) : DataExporter {
 
     override fun <T : Any> export(
@@ -38,6 +45,8 @@ class CsvExporter(
     ) {
         val columnMetas = ColumnMetaExtractor.extractColumnMetas(clazz)
         val sheetMeta = ColumnMetaExtractor.extractSheetMeta(clazz)
+
+        writeBomIfNeeded(outputStream)
 
         BufferedWriter(OutputStreamWriter(outputStream, charset)).use { writer ->
             if (includeHeader) {
@@ -59,6 +68,8 @@ class CsvExporter(
         val columnMetas = ColumnMetaExtractor.extractColumnMetas(clazz)
         val sheetMeta = ColumnMetaExtractor.extractSheetMeta(clazz)
 
+        writeBomIfNeeded(outputStream)
+
         BufferedWriter(OutputStreamWriter(outputStream, charset)).use { writer ->
             if (includeHeader) {
                 writeHeader(writer, columnMetas, sheetMeta)
@@ -70,6 +81,12 @@ class CsvExporter(
                     writeDataRow(writer, rowIndex++, item, columnMetas, sheetMeta)
                 }
             }
+        }
+    }
+
+    private fun writeBomIfNeeded(outputStream: OutputStream) {
+        if (includeBom && charset == Charsets.UTF_8) {
+            outputStream.write(UTF8_BOM)
         }
     }
 
@@ -190,5 +207,8 @@ class CsvExporter(
         private val DEFAULT_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         private val DEFAULT_DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         private val DEFAULT_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+        /** UTF-8 BOM (Byte Order Mark) for Excel compatibility */
+        private val UTF8_BOM = byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte())
     }
 }

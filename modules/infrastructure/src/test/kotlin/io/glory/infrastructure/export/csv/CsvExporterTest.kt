@@ -208,6 +208,64 @@ class CsvExporterTest {
         assertThat(lines[0]).isEqualTo("이름,나이")
     }
 
+    @Test
+    fun `should include UTF-8 BOM when includeBom is true`(): Unit {
+        // given
+        val bomExporter = CsvExporter(includeBom = true)
+        val data = listOf(SimpleDto(name = "홍길동", age = 30))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        bomExporter.export(data, SimpleDto::class, outputStream)
+
+        // then
+        val bytes = outputStream.toByteArray()
+        assertThat(bytes[0]).isEqualTo(0xEF.toByte())
+        assertThat(bytes[1]).isEqualTo(0xBB.toByte())
+        assertThat(bytes[2]).isEqualTo(0xBF.toByte())
+
+        // BOM 이후 내용 확인
+        val content = String(bytes, 3, bytes.size - 3, Charsets.UTF_8)
+        val lines = content.lines().filter { it.isNotBlank() }
+        assertThat(lines[0]).isEqualTo("이름,나이")
+        assertThat(lines[1]).isEqualTo("홍길동,30")
+    }
+
+    @Test
+    fun `should not include BOM when includeBom is false`(): Unit {
+        // given
+        val noBomExporter = CsvExporter(includeBom = false)
+        val data = listOf(SimpleDto(name = "홍길동", age = 30))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        noBomExporter.export(data, SimpleDto::class, outputStream)
+
+        // then
+        val bytes = outputStream.toByteArray()
+        // BOM이 없으면 첫 바이트가 BOM이 아님
+        assertThat(bytes[0]).isNotEqualTo(0xEF.toByte())
+    }
+
+    @Test
+    fun `should include BOM with chunks export`(): Unit {
+        // given
+        val bomExporter = CsvExporter(includeBom = true)
+        val allData = listOf(SimpleDto(name = "홍길동", age = 30))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        bomExporter.exportWithChunks(SimpleDto::class, outputStream) { consumer ->
+            consumer(allData)
+        }
+
+        // then
+        val bytes = outputStream.toByteArray()
+        assertThat(bytes[0]).isEqualTo(0xEF.toByte())
+        assertThat(bytes[1]).isEqualTo(0xBB.toByte())
+        assertThat(bytes[2]).isEqualTo(0xBF.toByte())
+    }
+
     // Test DTOs
 
     data class SimpleDto(

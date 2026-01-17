@@ -77,7 +77,6 @@ class ExcelExporter(
 
             workbook.write(outputStream)
         } finally {
-            workbook.dispose()
             workbook.close()
         }
     }

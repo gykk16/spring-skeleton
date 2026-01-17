@@ -26,7 +26,6 @@ class CellStyleFactoryTest {
 
     @AfterEach
     fun tearDown(): Unit {
-        workbook.dispose()
         workbook.close()
     }
 

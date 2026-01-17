@@ -132,7 +132,7 @@ modules/infrastructure/
 3. @ExportColumn 어노테이션 정보 추출
 4. 헤더 행 생성 (스타일 적용)
 5. 데이터 행 순차 생성 (타입 변환)
-6. OutputStream 출력 → dispose()
+6. OutputStream 출력 → close()
 ```
 
 **대용량 처리 (청크 기반)**:
@@ -140,7 +140,7 @@ modules/infrastructure/
 ```
 1. No-Offset Paging으로 1만 건씩 조회
 2. 청크 → 엑셀 쓰기 → entityManager.clear()
-3. 반복 → 완료 시 dispose()
+3. 반복 → 완료 시 close()
 ```
 
 ---
@@ -341,16 +341,55 @@ fun downloadLargeExcel(condition: OrderSearchCondition, response: HttpServletRes
 | 청크 처리 | 1만 건 단위 반복 | 안정적 처리 |
 | 스타일 캐싱 | CellStyle 재사용 | 64K 제한 회피 |
 | 리플렉션 캐싱 | 메타 1회 추출 | CPU↓ |
-| 임시 파일 정리 | `dispose()` 호출 | 디스크 누수 방지 |
+| 임시 파일 정리 | `close()` 호출 | 디스크 누수 방지 |
 
-**예상 리소스**:
+**벤치마크 결과** (2025-01-17, M1 Mac 기준):
 
-| 건수 | 메모리 | 시간 | 처리 |
-|------|--------|------|------|
-| 1만 | ~50MB | ~3초 | 동기 |
-| 10만 | ~100MB | ~30초 | 동기 |
-| 50만 | ~150MB | ~2분 | 동기/비동기 |
-| 100만 | ~200MB | ~5분 | 비동기 권장 |
+| 포맷 | 건수 | 시간 | 처리량 | 파일 크기 |
+|------|------|------|--------|----------|
+| Excel | 10K | 106ms | 94K rows/sec | 546KB |
+| Excel | 100K | 961ms | 104K rows/sec | 5.3MB |
+| Excel | 500K | 4,814ms | 104K rows/sec | 26.5MB |
+| CSV | 10K | 18ms | 556K rows/sec | 1MB |
+| CSV | 100K | 132ms | 758K rows/sec | 10.4MB |
+| CSV | 500K | 911ms | 549K rows/sec | 53.7MB |
+
+**메모리 사용량** (100K rows 기준):
+- 데이터 생성: 43MB
+- Excel Export: 11MB
+- 총 사용량: 54MB
+
+**청크 크기별 성능** (Excel 100K rows):
+
+| Chunk Size | Time (ms) | Rows/sec |
+|------------|-----------|----------|
+| 100 | 3,792 | 26K |
+| 500 | 2,353 | 42K |
+| 1,000 | 1,961 | 51K |
+| **5,000** | **946** | **106K** |
+| 10,000 | 1,013 | 99K |
+
+> **권장**: 청크 크기 5,000이 최적 성능
+
+**rowAccessWindowSize 비교** (Excel 100K rows):
+
+| Window Size | Time (ms) | Rows/sec |
+|-------------|-----------|----------|
+| 100 | 961 | 104K |
+| 500 | 993 | 101K |
+| 1,000 | 947 | 106K |
+| 2,000 | 950 | 105K |
+
+> **결론**: Window size는 100~2,000 범위에서 유의미한 차이 없음. 기본값 1,000 유지
+
+**예상 리소스** (실측 기반):
+
+| 건수 | 메모리 | 시간 (Excel) | 시간 (CSV) | 처리 |
+|------|--------|-------------|------------|------|
+| 1만 | ~15MB | ~0.1초 | ~0.02초 | 동기 |
+| 10만 | ~55MB | ~1초 | ~0.15초 | 동기 |
+| 50만 | ~150MB | ~5초 | ~1초 | 동기 |
+| 100만 | ~300MB | ~10초 | ~2초 | 동기/비동기 |
 
 ### 8.2 제약사항
 
@@ -358,7 +397,7 @@ fun downloadLargeExcel(condition: OrderSearchCondition, response: HttpServletRes
 |------|------|------|
 | 행 제한 | xlsx 최대 1,048,576행 | `OverflowStrategy` |
 | 쓰기 전용 | 생성 후 수정 불가 | XSSF (소량) |
-| 임시 파일 | 디스크 필요 | /tmp 확보, dispose() |
+| 임시 파일 | 디스크 필요 | /tmp 확보, close() |
 | 스타일 제한 | Workbook당 64K | 캐싱 필수 |
 | 동시 요청 | 리소스 부하 | 다운로드 수 제한 |
 | 타임아웃 | 대용량 시 끊김 | 비동기 + 링크 |
@@ -713,7 +752,7 @@ class ExcelExportService(
             setColumnWidths(sheet, columnMetas)
 
             workbook.write(outputStream)
-            workbook.dispose()
+            workbook.close()
         }
     }
 }
@@ -728,3 +767,4 @@ class ExcelExportService(
 | 1.0 | 2025-01-17 | 최초 작성 |
 | 1.1 | 2025-01-17 | 구조 개선, 문장 다듬기 |
 | 1.2 | 2025-01-17 | @QueryProjection DTO 직접 조회 패턴 추가 |
+| 1.3 | 2025-01-17 | 벤치마크 결과 추가 (Phase 3) |

@@ -23,7 +23,6 @@ class ValueConverterTest {
 
     @AfterEach
     fun tearDown(): Unit {
-        workbook.dispose()
         workbook.close()
     }
 

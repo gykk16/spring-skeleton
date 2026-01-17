@@ -46,3 +46,8 @@ configure<JavaPluginExtension> {
         }
     }
 }
+
+// Pass system properties to tests (for benchmark tests)
+tasks.test {
+    systemProperty("benchmark", System.getProperty("benchmark") ?: "false")
+}
