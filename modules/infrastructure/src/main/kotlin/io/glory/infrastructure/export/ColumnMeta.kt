@@ -1,5 +1,6 @@
 package io.glory.infrastructure.export
 
+import io.glory.infrastructure.export.annotation.ExportCellStyle
 import kotlin.reflect.KProperty1
 
 /**
@@ -11,6 +12,8 @@ data class ColumnMeta(
     val width: Int,
     val format: String,
     val property: KProperty1<*, *>,
+    val headerStyle: ExportCellStyle,
+    val bodyStyle: ExportCellStyle,
 )
 
 /**

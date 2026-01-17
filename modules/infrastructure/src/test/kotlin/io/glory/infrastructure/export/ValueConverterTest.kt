@@ -9,6 +9,8 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class ValueConverterTest {
 
@@ -32,7 +34,7 @@ class ValueConverterTest {
         val cell = sheet.createRow(0).createCell(0)
 
         // when
-        ValueConverter.setCellValue(cell, "테스트", "", workbook)
+        ValueConverter.setCellValue(cell, "테스트", "")
 
         // then
         assertThat(cell.stringCellValue).isEqualTo("테스트")
@@ -47,8 +49,8 @@ class ValueConverterTest {
         val cellFalse = row.createCell(1)
 
         // when
-        ValueConverter.setCellValue(cellTrue, true, "", workbook)
-        ValueConverter.setCellValue(cellFalse, false, "", workbook)
+        ValueConverter.setCellValue(cellTrue, true, "")
+        ValueConverter.setCellValue(cellFalse, false, "")
 
         // then
         assertThat(cellTrue.stringCellValue).isEqualTo("Y")
@@ -66,10 +68,10 @@ class ValueConverterTest {
         val cellBigDecimal = row.createCell(3)
 
         // when
-        ValueConverter.setCellValue(cellInt, 100, "", workbook)
-        ValueConverter.setCellValue(cellLong, 200L, "", workbook)
-        ValueConverter.setCellValue(cellDouble, 300.5, "", workbook)
-        ValueConverter.setCellValue(cellBigDecimal, BigDecimal("400.75"), "", workbook)
+        ValueConverter.setCellValue(cellInt, 100, "")
+        ValueConverter.setCellValue(cellLong, 200L, "")
+        ValueConverter.setCellValue(cellDouble, 300.5, "")
+        ValueConverter.setCellValue(cellBigDecimal, BigDecimal("400.75"), "")
 
         // then
         assertThat(cellInt.numericCellValue).isEqualTo(100.0)
@@ -86,7 +88,7 @@ class ValueConverterTest {
         val date = LocalDate.of(2025, 1, 17)
 
         // when
-        ValueConverter.setCellValue(cell, date, "", workbook)
+        ValueConverter.setCellValue(cell, date, "")
 
         // then
         assertThat(cell.stringCellValue).isEqualTo("2025-01-17")
@@ -100,7 +102,7 @@ class ValueConverterTest {
         val date = LocalDate.of(2025, 1, 17)
 
         // when
-        ValueConverter.setCellValue(cell, date, "yyyy/MM/dd", workbook)
+        ValueConverter.setCellValue(cell, date, "yyyy/MM/dd")
 
         // then
         assertThat(cell.stringCellValue).isEqualTo("2025/01/17")
@@ -114,7 +116,7 @@ class ValueConverterTest {
         val dateTime = LocalDateTime.of(2025, 1, 17, 14, 30, 45)
 
         // when
-        ValueConverter.setCellValue(cell, dateTime, "", workbook)
+        ValueConverter.setCellValue(cell, dateTime, "")
 
         // then
         assertThat(cell.stringCellValue).isEqualTo("2025-01-17 14:30:45")
@@ -128,7 +130,7 @@ class ValueConverterTest {
         val time = LocalTime.of(14, 30, 45)
 
         // when
-        ValueConverter.setCellValue(cell, time, "", workbook)
+        ValueConverter.setCellValue(cell, time, "")
 
         // then
         assertThat(cell.stringCellValue).isEqualTo("14:30:45")
@@ -141,7 +143,7 @@ class ValueConverterTest {
         val cell = sheet.createRow(0).createCell(0)
 
         // when
-        ValueConverter.setCellValue(cell, TestStatus.ACTIVE, "", workbook)
+        ValueConverter.setCellValue(cell, TestStatus.ACTIVE, "")
 
         // then
         assertThat(cell.stringCellValue).isEqualTo("ACTIVE")
@@ -154,10 +156,52 @@ class ValueConverterTest {
         val cell = sheet.createRow(0).createCell(0)
 
         // when
-        ValueConverter.setCellValue(cell, null, "", workbook)
+        ValueConverter.setCellValue(cell, null, "")
 
         // then
         assertThat(cell.cellType.name).isEqualTo("BLANK")
+    }
+
+    @Test
+    fun `should set ZonedDateTime with default ISO format`(): Unit {
+        // given
+        val sheet = workbook.createSheet()
+        val cell = sheet.createRow(0).createCell(0)
+        val zonedDateTime = ZonedDateTime.of(2025, 1, 17, 14, 30, 45, 0, ZoneId.of("Asia/Seoul"))
+
+        // when
+        ValueConverter.setCellValue(cell, zonedDateTime, "")
+
+        // then
+        assertThat(cell.stringCellValue).isEqualTo("2025-01-17T14:30:45+09:00[Asia/Seoul]")
+    }
+
+    @Test
+    fun `should set ZonedDateTime with custom format`(): Unit {
+        // given
+        val sheet = workbook.createSheet()
+        val cell = sheet.createRow(0).createCell(0)
+        val zonedDateTime = ZonedDateTime.of(2025, 1, 17, 14, 30, 45, 0, ZoneId.of("Asia/Seoul"))
+
+        // when
+        ValueConverter.setCellValue(cell, zonedDateTime, "yyyy-MM-dd HH:mm:ss")
+
+        // then
+        assertThat(cell.stringCellValue).isEqualTo("2025-01-17 14:30:45")
+    }
+
+    @Test
+    fun `should apply style when provided`(): Unit {
+        // given
+        val sheet = workbook.createSheet()
+        val cell = sheet.createRow(0).createCell(0)
+        val style = workbook.createCellStyle()
+
+        // when
+        ValueConverter.setCellValue(cell, "테스트", "", style)
+
+        // then
+        assertThat(cell.cellStyle).isSameAs(style)
     }
 
     private enum class TestStatus {

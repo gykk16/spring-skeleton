@@ -2,8 +2,6 @@ package io.glory.infrastructure.export
 
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellStyle
-import org.apache.poi.ss.usermodel.CellType
-import org.apache.poi.ss.usermodel.Workbook
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -19,53 +17,39 @@ object ValueConverter {
     private val defaultDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val defaultDateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val defaultTimeFormat = DateTimeFormatter.ofPattern("HH:mm:ss")
+    private val defaultZonedDateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX'['VV']'")
 
     /**
      * 값을 셀에 설정
      *
+     * 스타일(포맷 포함)은 CellStyleFactory에서 미리 생성하여 전달해야 합니다.
+     *
      * @param cell 대상 셀
      * @param value 설정할 값
-     * @param format 포맷 문자열 (날짜/숫자용)
-     * @param workbook Workbook (DataFormat 생성용)
-     * @param baseStyle 기본 스타일 (포맷 적용 시 복사)
+     * @param format 포맷 문자열 (날짜용, 숫자는 style에 포함)
+     * @param style 적용할 셀 스타일 (포맷 포함)
      */
     fun setCellValue(
         cell: Cell,
         value: Any?,
         format: String,
-        workbook: Workbook,
-        baseStyle: CellStyle? = null,
+        style: CellStyle? = null,
     ) {
         when (value) {
             null -> cell.setBlank()
             is String -> cell.setCellValue(value)
             is Boolean -> cell.setCellValue(if (value) "Y" else "N")
-            is Int -> setNumericValue(cell, value.toDouble(), format, workbook, baseStyle)
-            is Long -> setNumericValue(cell, value.toDouble(), format, workbook, baseStyle)
-            is Double -> setNumericValue(cell, value, format, workbook, baseStyle)
-            is Float -> setNumericValue(cell, value.toDouble(), format, workbook, baseStyle)
-            is BigDecimal -> setNumericValue(cell, value.toDouble(), format, workbook, baseStyle)
+            is Number -> cell.setCellValue(value.toDouble())
             is LocalDate -> setDateValue(cell, value, format)
             is LocalDateTime -> setDateTimeValue(cell, value, format)
             is LocalTime -> setTimeValue(cell, value, format)
-            is ZonedDateTime -> setDateTimeValue(cell, value.toLocalDateTime(), format)
+            is ZonedDateTime -> setZonedDateTimeValue(cell, value, format)
             is Enum<*> -> cell.setCellValue(value.name)
             else -> cell.setCellValue(value.toString())
         }
-    }
 
-    private fun setNumericValue(
-        cell: Cell,
-        value: Double,
-        format: String,
-        workbook: Workbook,
-        baseStyle: CellStyle?,
-    ) {
-        cell.setCellValue(value)
-        if (format.isNotBlank()) {
-            val style = baseStyle?.let { workbook.createCellStyle().apply { cloneStyleFrom(it) } }
-                ?: workbook.createCellStyle()
-            style.dataFormat = workbook.createDataFormat().getFormat(format)
+        // 스타일 적용
+        if (style != null) {
             cell.cellStyle = style
         }
     }
@@ -97,7 +81,12 @@ object ValueConverter {
         cell.setCellValue(value.format(formatter))
     }
 
-    private fun Cell.setBlank() {
-        setCellType(CellType.BLANK)
+    private fun setZonedDateTimeValue(cell: Cell, value: ZonedDateTime, format: String) {
+        val formatter = if (format.isNotBlank()) {
+            DateTimeFormatter.ofPattern(format)
+        } else {
+            defaultZonedDateTimeFormat
+        }
+        cell.setCellValue(value.format(formatter))
     }
 }

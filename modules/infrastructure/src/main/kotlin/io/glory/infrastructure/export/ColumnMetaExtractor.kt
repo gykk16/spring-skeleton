@@ -56,6 +56,8 @@ object ColumnMetaExtractor {
             width = annotation.width,
             format = annotation.format,
             property = property,
+            headerStyle = annotation.headerStyle,
+            bodyStyle = annotation.bodyStyle,
         )
     }
 

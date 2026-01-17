@@ -1,8 +1,13 @@
 package io.glory.infrastructure.export.excel
 
 import io.glory.infrastructure.export.ColumnMetaExtractor
+import io.glory.infrastructure.export.annotation.ExportAlignment
+import io.glory.infrastructure.export.annotation.ExportCellStyle
+import io.glory.infrastructure.export.annotation.ExportColor
 import io.glory.infrastructure.export.annotation.ExportColumn
 import io.glory.infrastructure.export.annotation.ExportSheet
+import org.apache.poi.ss.usermodel.FillPatternType
+import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -167,6 +172,97 @@ class ExcelExporterTest {
         workbook.close()
     }
 
+    @Test
+    fun `should apply default header style with bold grey and center alignment`(): Unit {
+        // given
+        val data = listOf(SimpleDto(name = "테스트", age = 20))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        exporter.export(data, SimpleDto::class, outputStream)
+
+        // then
+        val workbook = XSSFWorkbook(ByteArrayInputStream(outputStream.toByteArray()))
+        val headerRow = workbook.getSheetAt(0).getRow(0)
+        val headerStyle = headerRow.getCell(0).cellStyle
+
+        assertThat(headerStyle.fillForegroundColor).isEqualTo(ExportColor.GREY_25.index)
+        assertThat(headerStyle.fillPattern).isEqualTo(FillPatternType.SOLID_FOREGROUND)
+        assertThat(headerStyle.alignment).isEqualTo(HorizontalAlignment.CENTER)
+
+        val font = workbook.getFontAt(headerStyle.fontIndex)
+        assertThat(font.bold).isTrue
+
+        workbook.close()
+    }
+
+    @Test
+    fun `should apply custom header style`(): Unit {
+        // given
+        val data = listOf(StyledDto(name = "테스트", amount = BigDecimal("1000")))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        exporter.export(data, StyledDto::class, outputStream)
+
+        // then
+        val workbook = XSSFWorkbook(ByteArrayInputStream(outputStream.toByteArray()))
+        val headerRow = workbook.getSheetAt(0).getRow(0)
+
+        // 첫 번째 컬럼: 커스텀 헤더 스타일 (파란 배경, 흰색 글자)
+        val nameHeaderStyle = headerRow.getCell(0).cellStyle
+        assertThat(nameHeaderStyle.fillForegroundColor).isEqualTo(ExportColor.LIGHT_BLUE.index)
+        assertThat(nameHeaderStyle.alignment).isEqualTo(HorizontalAlignment.CENTER)
+
+        val nameHeaderFont = workbook.getFontAt(nameHeaderStyle.fontIndex)
+        assertThat(nameHeaderFont.bold).isTrue
+        assertThat(nameHeaderFont.color).isEqualTo(ExportColor.WHITE.index)
+
+        workbook.close()
+    }
+
+    @Test
+    fun `should apply custom body style`(): Unit {
+        // given
+        val data = listOf(StyledDto(name = "테스트", amount = BigDecimal("1000")))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        exporter.export(data, StyledDto::class, outputStream)
+
+        // then
+        val workbook = XSSFWorkbook(ByteArrayInputStream(outputStream.toByteArray()))
+        val dataRow = workbook.getSheetAt(0).getRow(1)
+
+        // 두 번째 컬럼(amount): 오른쪽 정렬 바디 스타일
+        val amountBodyStyle = dataRow.getCell(1).cellStyle
+        assertThat(amountBodyStyle.alignment).isEqualTo(HorizontalAlignment.RIGHT)
+
+        workbook.close()
+    }
+
+    @Test
+    fun `should apply format with body style`(): Unit {
+        // given
+        val data = listOf(FormattedStyleDto(price = BigDecimal("12345.67")))
+        val outputStream = ByteArrayOutputStream()
+
+        // when
+        exporter.export(data, FormattedStyleDto::class, outputStream)
+
+        // then
+        val workbook = XSSFWorkbook(ByteArrayInputStream(outputStream.toByteArray()))
+        val dataRow = workbook.getSheetAt(0).getRow(1)
+
+        val priceStyle = dataRow.getCell(0).cellStyle
+        assertThat(priceStyle.alignment).isEqualTo(HorizontalAlignment.RIGHT)
+
+        val dataFormatString = workbook.createDataFormat().getFormat(priceStyle.dataFormat)
+        assertThat(dataFormatString).isEqualTo("#,##0")
+
+        workbook.close()
+    }
+
     // Test DTOs
 
     data class SimpleDto(
@@ -217,4 +313,34 @@ class ExcelExporterTest {
     enum class OrderStatus {
         PENDING, COMPLETED, CANCELLED
     }
+
+    data class StyledDto(
+        @ExportColumn(
+            header = "이름",
+            order = 1,
+            headerStyle = ExportCellStyle(
+                bold = true,
+                fontColor = ExportColor.WHITE,
+                bgColor = ExportColor.LIGHT_BLUE,
+                alignment = ExportAlignment.CENTER,
+            ),
+        )
+        val name: String,
+        @ExportColumn(
+            header = "금액",
+            order = 2,
+            bodyStyle = ExportCellStyle(alignment = ExportAlignment.RIGHT),
+        )
+        val amount: BigDecimal,
+    )
+
+    data class FormattedStyleDto(
+        @ExportColumn(
+            header = "가격",
+            order = 1,
+            format = "#,##0",
+            bodyStyle = ExportCellStyle(alignment = ExportAlignment.RIGHT),
+        )
+        val price: BigDecimal,
+    )
 }
