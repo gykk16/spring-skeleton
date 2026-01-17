@@ -52,6 +52,8 @@ class EnvironmentUtil(
 
     fun isNonProduction(): Boolean = !isProductionLazy
 
+    fun isStagingOrProduction(): Boolean = isStagingLazy || isProductionLazy
+
     fun isStaging(): Boolean = isStagingLazy
 
     fun isTest(): Boolean = isTestLazy

@@ -15,10 +15,9 @@ class StopWatchTest : DescribeSpec({
             it("should return Pair of elapsed time and function result") {
                 // given
                 val expectedResult = "test result"
-                val testFunction = { expectedResult }
 
                 // when
-                val (elapsedMs, result) = stopWatch("Test Function", testFunction)
+                val (elapsedMs, result) = stopWatch("Test Function") { expectedResult }
 
                 // then
                 result shouldBe expectedResult
@@ -28,13 +27,12 @@ class StopWatchTest : DescribeSpec({
             it("should measure execution time accurately") {
                 // given
                 val delayMillis = 100L
-                val testFunction = {
+
+                // when
+                val (elapsedMs, result) = stopWatch("Long Running Test") {
                     sleep(delayMillis)
                     "completed"
                 }
-
-                // when
-                val (elapsedMs, result) = stopWatch("Long Running Test", testFunction)
 
                 // then
                 result shouldBe "completed"
@@ -45,24 +43,20 @@ class StopWatchTest : DescribeSpec({
             it("should propagate exception while still measuring time") {
                 // given
                 val expectedException = RuntimeException("Test exception")
-                val testFunction = {
-                    sleep(50)
-                    throw expectedException
-                }
 
                 // when & then
                 val exception = shouldThrow<RuntimeException> {
-                    stopWatch("Exception Test", testFunction)
+                    stopWatch("Exception Test") {
+                        sleep(50)
+                        throw expectedException
+                    }
                 }
                 exception shouldBe expectedException
             }
 
             it("should handle null return values") {
-                // given
-                val testFunction: () -> String? = { null }
-
                 // when
-                val (elapsedMs, result) = stopWatch("Null Return Test", testFunction)
+                val (elapsedMs, result) = stopWatch<String?>("Null Return Test") { null }
 
                 // then
                 result shouldBe null
@@ -70,15 +64,10 @@ class StopWatchTest : DescribeSpec({
             }
 
             it("should work with different return types") {
-                // given
-                val intFunction = { 42 }
-                val listFunction = { listOf(1, 2, 3) }
-                val mapFunction = { mapOf("key" to "value") }
-
                 // when
-                val (_, intResult) = stopWatch("Int Test", intFunction)
-                val (_, listResult) = stopWatch("List Test", listFunction)
-                val (_, mapResult) = stopWatch("Map Test", mapFunction)
+                val (_, intResult) = stopWatch("Int Test") { 42 }
+                val (_, listResult) = stopWatch("List Test") { listOf(1, 2, 3) }
+                val (_, mapResult) = stopWatch("Map Test") { mapOf("key" to "value") }
 
                 // then
                 intResult shouldBe 42
@@ -88,13 +77,12 @@ class StopWatchTest : DescribeSpec({
         }
 
         context("without title parameter") {
-            it("should return Pair using class name as title") {
+            it("should return Pair using default title") {
                 // given
                 val expectedResult = "result without title"
-                val testFunction = { expectedResult }
 
                 // when
-                val (elapsedMs, result) = stopWatch(testFunction)
+                val (elapsedMs, result) = stopWatch { expectedResult }
 
                 // then
                 result shouldBe expectedResult
@@ -104,11 +92,10 @@ class StopWatchTest : DescribeSpec({
             it("should propagate exceptions without title") {
                 // given
                 val expectedException = IllegalArgumentException("Invalid argument")
-                val testFunction = { throw expectedException }
 
                 // when & then
                 val exception = shouldThrow<IllegalArgumentException> {
-                    stopWatch(testFunction)
+                    stopWatch<Nothing> { throw expectedException }
                 }
                 exception shouldBe expectedException
             }
@@ -131,11 +118,8 @@ class StopWatchTest : DescribeSpec({
             }
 
             it("should return near-zero elapsed time for fast functions") {
-                // given
-                val fastFunction = { 1 + 1 }
-
                 // when
-                val (elapsedMs, result) = stopWatch("Fast Function", fastFunction)
+                val (elapsedMs, result) = stopWatch("Fast Function") { 1 + 1 }
 
                 // then
                 result shouldBe 2
@@ -154,8 +138,8 @@ class StopWatchTest : DescribeSpec({
                 }
 
                 // when
-                val results = functions.mapIndexed { index, function ->
-                    stopWatch("Sequential Test $index", function)
+                val results = functions.mapIndexed { index, func ->
+                    stopWatch("Sequential Test $index") { func() }
                 }
 
                 // then

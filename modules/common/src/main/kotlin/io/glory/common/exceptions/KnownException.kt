@@ -3,7 +3,14 @@ package io.glory.common.exceptions
 import io.glory.common.codes.ResponseCode
 
 /**
- * GlobalExceptionHandler 이 로깅 하지 않는 exception
+ * Exception for expected/known error conditions that should not be logged.
+ *
+ * Use this exception for expected business errors like:
+ * - Resource not found
+ * - Validation failures
+ * - User input errors
+ *
+ * The GlobalExceptionHandler will not log the stack trace for this exception type.
  */
 open class KnownException @JvmOverloads constructor(
     override val code: ResponseCode,
@@ -13,5 +20,5 @@ open class KnownException @JvmOverloads constructor(
     code = code,
     message = message,
     cause = cause,
-    printStackTrace = false
+    logStackTrace = false,
 )

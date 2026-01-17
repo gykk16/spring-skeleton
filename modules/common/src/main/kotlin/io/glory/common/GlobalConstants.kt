@@ -26,7 +26,8 @@ val FILTER_EXCLUDE_PATH = arrayOf(
 )
 
 val INTERCEPTOR_EXCLUDE_PATH = listOf(
-    HEALTH_CHECK_PATH, "/css/**", "/js/**", "/img/**", "/images/**", "/error/**", "/download/**", "/common/file**",
+    HEALTH_CHECK_PATH,
+    "/css/**", "/js/**", "/img/**", "/images/**", "/error/**", "/download/**", "/common/file**",
     "/swagger-ui/**", "/v3/api-docs/**", "/*.ico",
     "/.well-known/**",
 )

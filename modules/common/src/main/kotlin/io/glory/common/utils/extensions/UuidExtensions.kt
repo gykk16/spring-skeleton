@@ -18,14 +18,11 @@ fun Uuid.extractTimestamp(): Long {
 }
 
 /**
- * Extracts [LocalDateTime] from UUID v7 using the system default timezone.
+ * Extracts [LocalDateTime] from UUID v7.
+ *
+ * @param zoneId the timezone to use (default: system default)
  */
+@JvmOverloads
 @OptIn(ExperimentalUuidApi::class)
-fun Uuid.extractLocalDateTime(): LocalDateTime = extractLocalDateTime(ZoneId.systemDefault())
-
-/**
- * Extracts [LocalDateTime] from UUID v7 using the specified [zoneId].
- */
-@OptIn(ExperimentalUuidApi::class)
-fun Uuid.extractLocalDateTime(zoneId: ZoneId): LocalDateTime =
+fun Uuid.extractLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime =
     Instant.ofEpochMilli(extractTimestamp()).atZone(zoneId).toLocalDateTime()
