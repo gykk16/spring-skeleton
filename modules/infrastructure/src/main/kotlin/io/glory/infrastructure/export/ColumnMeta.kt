@@ -1,6 +1,7 @@
 package io.glory.infrastructure.export
 
 import io.glory.infrastructure.export.annotation.ExportCellStyle
+import io.glory.infrastructure.export.annotation.OverflowStrategy
 import kotlin.reflect.KProperty1
 
 /**
@@ -25,4 +26,5 @@ data class SheetMeta(
     val includeIndex: Boolean,
     val indexHeader: String,
     val indexWidth: Int,
+    val overflowStrategy: OverflowStrategy,
 )

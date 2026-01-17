@@ -6,11 +6,14 @@ import io.glory.infrastructure.export.annotation.ExportCellStyle
 import io.glory.infrastructure.export.annotation.ExportColor
 import io.glory.infrastructure.export.annotation.ExportColumn
 import io.glory.infrastructure.export.annotation.ExportSheet
+import io.glory.infrastructure.export.annotation.OverflowStrategy
 import org.apache.poi.ss.usermodel.FillPatternType
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -342,5 +345,86 @@ class ExcelExporterTest {
             bodyStyle = ExportCellStyle(alignment = ExportAlignment.RIGHT),
         )
         val price: BigDecimal,
+    )
+
+    @Nested
+    inner class OverflowStrategyTest {
+
+        @Test
+        fun `should throw ExcelRowLimitExceededException when EXCEPTION strategy and exceeds max rows`(): Unit {
+            // given
+            val rowCount = ExcelExporter.MAX_ROWS_PER_SHEET + 10
+            val data = (1..rowCount).map { ExceptionStrategyDto(name = "이름$it") }
+            val outputStream = ByteArrayOutputStream()
+
+            // when & then
+            assertThatThrownBy {
+                exporter.export(data, ExceptionStrategyDto::class, outputStream)
+            }.isInstanceOf(ExcelRowLimitExceededException::class.java)
+                .hasMessageContaining("Excel row limit exceeded")
+                .hasMessageContaining("${ExcelExporter.MAX_ROWS_PER_SHEET}")
+        }
+
+        @Test
+        fun `should throw UnsupportedOperationException when CSV_FALLBACK strategy`(): Unit {
+            // given
+            val rowCount = ExcelExporter.MAX_ROWS_PER_SHEET + 10
+            val data = (1..rowCount).map { CsvFallbackStrategyDto(name = "이름$it") }
+            val outputStream = ByteArrayOutputStream()
+
+            // when & then
+            assertThatThrownBy {
+                exporter.export(data, CsvFallbackStrategyDto::class, outputStream)
+            }.isInstanceOf(UnsupportedOperationException::class.java)
+                .hasMessageContaining("CSV_FALLBACK is not implemented")
+        }
+
+        @Test
+        fun `should use MULTI_SHEET as default overflow strategy`(): Unit {
+            // given
+            val data = listOf(SimpleDto(name = "테스트", age = 20))
+            val outputStream = ByteArrayOutputStream()
+
+            // when
+            exporter.export(data, SimpleDto::class, outputStream)
+
+            // then - default strategy should not throw exception
+            val workbook = XSSFWorkbook(ByteArrayInputStream(outputStream.toByteArray()))
+            assertThat(workbook.numberOfSheets).isEqualTo(1)
+            workbook.close()
+        }
+
+        @Test
+        fun `should export with EXCEPTION strategy when rows within limit`(): Unit {
+            // given
+            val data = listOf(
+                ExceptionStrategyDto(name = "첫번째"),
+                ExceptionStrategyDto(name = "두번째"),
+            )
+            val outputStream = ByteArrayOutputStream()
+
+            // when
+            exporter.export(data, ExceptionStrategyDto::class, outputStream)
+
+            // then
+            val workbook = XSSFWorkbook(ByteArrayInputStream(outputStream.toByteArray()))
+            assertThat(workbook.numberOfSheets).isEqualTo(1)
+            assertThat(workbook.getSheetAt(0).lastRowNum).isEqualTo(2)
+            workbook.close()
+        }
+    }
+
+    // OverflowStrategy Test DTOs
+
+    @ExportSheet(name = "예외전략", overflowStrategy = OverflowStrategy.EXCEPTION)
+    data class ExceptionStrategyDto(
+        @ExportColumn(header = "이름", order = 1)
+        val name: String,
+    )
+
+    @ExportSheet(name = "CSV대체", overflowStrategy = OverflowStrategy.CSV_FALLBACK)
+    data class CsvFallbackStrategyDto(
+        @ExportColumn(header = "이름", order = 1)
+        val name: String,
     )
 }

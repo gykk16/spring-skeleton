@@ -2,6 +2,7 @@ package io.glory.infrastructure.export
 
 import io.glory.infrastructure.export.annotation.ExportColumn
 import io.glory.infrastructure.export.annotation.ExportSheet
+import io.glory.infrastructure.export.annotation.OverflowStrategy
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -29,6 +30,7 @@ object ColumnMetaExtractor {
                 includeIndex = annotation?.includeIndex ?: false,
                 indexHeader = annotation?.indexHeader ?: "No.",
                 indexWidth = annotation?.indexWidth ?: 6,
+                overflowStrategy = annotation?.overflowStrategy ?: OverflowStrategy.MULTI_SHEET,
             )
         }
     }
