@@ -3,7 +3,6 @@ package io.glory.infrastructure.slack
 import com.slack.api.model.block.ContextBlock
 import com.slack.api.model.block.SectionBlock
 import com.slack.api.model.block.composition.MarkdownTextObject
-import io.glory.common.TraceHeader
 import io.glory.infrastructure.slack.message.SlackColor
 import io.glory.infrastructure.slack.message.SlackMessage
 import io.glory.infrastructure.slack.message.slackMessage
@@ -289,7 +288,7 @@ class SlackNotificationServiceTest {
             whenever(slackClient.send(any(), any())).thenReturn(SlackResponse("ts", "#alerts"))
 
             // MDC는 slackMessage 생성 전에 설정해야 함
-            MDC.put(TraceHeader.APP_TRACE_ID, "test-trace-id-12345")
+            MDC.put("traceId", "test-trace-id-12345")
 
             // when - footer는 slackMessage 생성 시점에 추가됨
             val message = slackMessage { text("Test message") }
@@ -307,14 +306,14 @@ class SlackNotificationServiceTest {
         }
 
         @Test
-        fun `should use fallback traceId key when APP_TRACE_ID is not set`(): Unit {
+        fun `should use traceId key from MDC`(): Unit {
             // given
             val properties = createProperties(defaultChannel = "#alerts")
             service = SlackNotificationService(slackClient, properties)
             whenever(slackClient.send(any(), any())).thenReturn(SlackResponse("ts", "#alerts"))
 
             // MDC는 slackMessage 생성 전에 설정해야 함
-            MDC.put("traceId", "fallback-trace-id")
+            MDC.put("traceId", "another-trace-id")
 
             // when - footer는 slackMessage 생성 시점에 추가됨
             val message = slackMessage { text("Test message") }
@@ -328,7 +327,7 @@ class SlackNotificationServiceTest {
             val footerBlock = sentMessage.blocks.last() as ContextBlock
             val footerText = (footerBlock.elements[0] as MarkdownTextObject).text
 
-            assertThat(footerText).contains("fallback-trace-id")
+            assertThat(footerText).contains("another-trace-id")
         }
 
         @Test
@@ -388,7 +387,7 @@ class SlackNotificationServiceTest {
             whenever(slackClient.send(any(), any())).thenReturn(SlackResponse("ts", "#channel"))
 
             // MDC는 slackMessage 생성 전에 설정해야 함
-            MDC.put(TraceHeader.APP_TRACE_ID, "reply-trace-id")
+            MDC.put("traceId", "reply-trace-id")
 
             // when - footer는 slackMessage 생성 시점에 추가됨
             val message = slackMessage { text("Reply message") }

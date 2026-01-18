@@ -7,7 +7,7 @@ import io.glory.infrastructure.export.annotation.ExportColor;
 import io.glory.infrastructure.export.annotation.ExportColumn;
 import io.glory.infrastructure.export.annotation.ExportSheet;
 
-@ExportSheet(name = "스타일적용")
+@ExportSheet(name = "스타일적용", includeIndex = false)
 public record JavaStyledRecordDto(
     @ExportColumn(
         header = "상품명",

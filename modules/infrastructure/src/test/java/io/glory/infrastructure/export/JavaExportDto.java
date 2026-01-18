@@ -3,7 +3,7 @@ package io.glory.infrastructure.export;
 import io.glory.infrastructure.export.annotation.ExportColumn;
 import io.glory.infrastructure.export.annotation.ExportSheet;
 
-@ExportSheet(name = "자바DTO")
+@ExportSheet(name = "자바DTO", includeIndex = false)
 public class JavaExportDto {
 
     @ExportColumn(header = "이름", order = 1)

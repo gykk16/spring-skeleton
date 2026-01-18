@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-@Disabled
 class JavaDtoExportTest {
 
     private lateinit var exporter: ExcelExporter
