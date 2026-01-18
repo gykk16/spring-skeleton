@@ -7,8 +7,8 @@ import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.block.LayoutBlock
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.glory.infrastructure.slack.message.SlackMessage
+import io.glory.common.utils.coroutine.CoroutineUtils.runBlockingWithMDC
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
@@ -147,7 +147,7 @@ class SlackClient(
     }
 
     private fun executePostMessage(request: ChatPostMessageRequest): SlackResponse {
-        val response = runBlocking { executeWithRetry { methodsClient.chatPostMessage(request) } }
+        val response = runBlockingWithMDC { executeWithRetry { methodsClient.chatPostMessage(request) } }
 
         if (!response.isOk) {
             throw mapError(response.error, response.warning, request.channel)
