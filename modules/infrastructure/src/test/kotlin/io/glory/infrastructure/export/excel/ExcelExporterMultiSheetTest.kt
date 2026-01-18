@@ -209,7 +209,7 @@ class ExcelExporterMultiSheetTest {
     inner class IndexedMultiSheetTest {
 
         @Test
-        fun `should maintain index per sheet across multiple sheets`(): Unit {
+        fun `should maintain continuous index across multiple sheets`(): Unit {
             // given
             val data = (1..15).map { IndexedMultiSheetDto(name = "이름$it") }
             val outputStream = ByteArrayOutputStream()
@@ -228,10 +228,11 @@ class ExcelExporterMultiSheetTest {
             assertThat(sheet1.getRow(1).getCell(0).numericCellValue).isEqualTo(1.0)
             assertThat(sheet1.getRow(9).getCell(0).numericCellValue).isEqualTo(9.0)
 
-            // 두 번째 시트: index는 시트별로 리셋 (1부터 시작)
+            // 두 번째 시트: index는 연속 (10부터 시작)
             val sheet2 = workbook.getSheetAt(1)
             assertThat(sheet2.getRow(0).getCell(0).stringCellValue).isEqualTo("No.")
-            assertThat(sheet2.getRow(1).getCell(0).numericCellValue).isEqualTo(1.0)
+            assertThat(sheet2.getRow(1).getCell(0).numericCellValue).isEqualTo(10.0)
+            assertThat(sheet2.getRow(6).getCell(0).numericCellValue).isEqualTo(15.0)
 
             workbook.close()
         }
@@ -239,7 +240,7 @@ class ExcelExporterMultiSheetTest {
 
     // Test DTOs
 
-    @ExportSheet(name = "데이터", overflowStrategy = OverflowStrategy.MULTI_SHEET)
+    @ExportSheet(name = "데이터", includeIndex = false, overflowStrategy = OverflowStrategy.MULTI_SHEET)
     data class MultiSheetDto(
         @ExportColumn(header = "이름", order = 1)
         val name: String,
@@ -247,7 +248,7 @@ class ExcelExporterMultiSheetTest {
         val value: Int,
     )
 
-    @ExportSheet(name = "예외시트", overflowStrategy = OverflowStrategy.EXCEPTION)
+    @ExportSheet(name = "예외시트", includeIndex = false, overflowStrategy = OverflowStrategy.EXCEPTION)
     data class ExceptionDto(
         @ExportColumn(header = "이름", order = 1)
         val name: String,

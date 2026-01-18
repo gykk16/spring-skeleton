@@ -75,6 +75,7 @@ class ExcelExporter(
         createDataRow(
             context.currentSheet,
             context.currentRowIndex,
+            context.globalRowIndex,
             item,
             context.columnMetas,
             context.sheetMeta,
@@ -154,6 +155,7 @@ class ExcelExporter(
     private fun <T : Any> createDataRow(
         sheet: SXSSFSheet,
         rowIndex: Int,
+        indexNumber: Int,
         item: T,
         columnMetas: List<ColumnMeta>,
         sheetMeta: SheetMeta,
@@ -164,7 +166,7 @@ class ExcelExporter(
 
         if (sheetMeta.includeIndex) {
             val cell = row.createCell(colIndex++)
-            cell.setCellValue(rowIndex.toDouble())
+            cell.setCellValue(indexNumber.toDouble())
         }
 
         columnMetas.forEach { meta ->
