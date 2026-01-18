@@ -29,6 +29,9 @@
 
 |Persistence
 |JPA & QueryDSL
+
+|Export
+|Excel/CSV 파일 내보내기 (어노테이션 기반)
 |===
 
 == HTTP Client
@@ -235,6 +238,333 @@ Virtual Thread 기반 비동기 실행 설정입니다.
 === MdcTaskDecorator
 
 MDC 컨텍스트를 비동기 스레드로 전파합니다.
+
+== Export
+
+어노테이션 기반 Excel/CSV 파일 내보내기입니다.
+
+=== 기본 사용법
+
+[source,kotlin]
+----
+// 1. DTO에 어노테이션 적용
+@ExportSheet(name = "사용자 목록")
+data class UserExportDto(
+    @ExportColumn(header = "이름", order = 1)
+    val name: String,
+    @ExportColumn(header = "이메일", order = 2)
+    val email: String,
+    @ExportColumn(header = "가입일", order = 3, format = "yyyy-MM-dd")
+    val createdAt: LocalDate,
+)
+
+// 2. Excel 내보내기
+val exporter = ExcelExporter()
+exporter.export(users, UserExportDto::class, outputStream)
+
+// 3. CSV 내보내기
+val csvExporter = CsvExporter()
+csvExporter.export(users, UserExportDto::class, outputStream)
+----
+
+=== @ExportSheet
+
+시트 레벨 설정입니다.
+
+|===
+|속성 |기본값 |설명
+
+|`name`
+|`"Sheet1"`
+|시트명
+
+|`freezeHeader`
+|`true`
+|헤더 행 고정 여부
+
+|`includeIndex`
+|`true`
+|인덱스 컬럼 포함 (No.)
+
+|`indexHeader`
+|`"No."`
+|인덱스 헤더명
+
+|`indexWidth`
+|`6`
+|인덱스 컬럼 너비
+
+|`overflowStrategy`
+|`MULTI_SHEET`
+|시트 최대 행 초과 시 처리 전략
+|===
+
+=== @ExportColumn
+
+컬럼 레벨 설정입니다.
+
+|===
+|속성 |기본값 |설명
+
+|`header`
+|필수
+|헤더명
+
+|`order`
+|`0`
+|컬럼 순서
+
+|`width`
+|`-1`
+|컬럼 너비 (음수: 자동)
+
+|`format`
+|`""`
+|셀 포맷 (숫자/날짜)
+
+|`headerStyle`
+|`NONE`
+|헤더 스타일
+
+|`bodyStyle`
+|`NONE`
+|바디 스타일
+|===
+
+=== 스타일 프리셋
+
+`ExportStylePreset`으로 미리 정의된 스타일을 사용합니다.
+
+==== 헤더 프리셋
+
+|===
+|프리셋 |설명
+
+|`HEADER_DEFAULT`
+|굵게, 회색 배경, 가운데 정렬
+
+|`HEADER_BLUE`
+|굵게, 파란 배경, 가운데 정렬, 테두리
+
+|`HEADER_DARK_BLUE`
+|굵게, 진한 파란 배경, 흰 글씨
+
+|`HEADER_GREEN`
+|굵게, 녹색 배경, 가운데 정렬, 테두리
+
+|`HEADER_ORANGE`
+|굵게, 주황 배경, 가운데 정렬, 테두리
+
+|`HEADER_YELLOW`
+|굵게, 노란 배경, 가운데 정렬, 테두리
+|===
+
+==== 바디 프리셋
+
+|===
+|프리셋 |설명
+
+|`BODY_DEFAULT`
+|왼쪽 정렬
+
+|`BODY_CENTER`
+|가운데 정렬
+
+|`BODY_RIGHT`
+|오른쪽 정렬 (숫자용)
+
+|`BODY_HIGHLIGHT`
+|굵게, 노란 배경
+
+|`BODY_WARNING`
+|굵게, 주황 배경, 빨간 글씨
+
+|`BODY_SUCCESS`
+|녹색 배경
+
+|`BODY_CURRENCY`
+|굵게, 오른쪽 정렬
+
+|`BODY_LINK`
+|파란 글씨
+|===
+
+==== 프리셋 사용 예시
+
+[source,kotlin]
+----
+@ExportSheet(name = "주문 내역")
+data class OrderExportDto(
+    @ExportColumn(
+        header = "주문번호",
+        order = 1,
+        headerStyle = ExportCellStyle(preset = ExportStylePreset.HEADER_BLUE),
+    )
+    val orderNo: String,
+
+    @ExportColumn(
+        header = "금액",
+        order = 2,
+        format = "#,##0",
+        headerStyle = ExportCellStyle(preset = ExportStylePreset.HEADER_BLUE),
+        bodyStyle = ExportCellStyle(preset = ExportStylePreset.BODY_CURRENCY),
+    )
+    val amount: Long,
+
+    @ExportColumn(
+        header = "상태",
+        order = 3,
+        headerStyle = ExportCellStyle(preset = ExportStylePreset.HEADER_BLUE),
+        bodyStyle = ExportCellStyle(preset = ExportStylePreset.BODY_CENTER),
+    )
+    val status: String,
+)
+----
+
+=== 커스텀 스타일
+
+`@ExportCellStyle`로 세부 스타일을 지정합니다.
+
+[source,kotlin]
+----
+@ExportColumn(
+    header = "특별 할인",
+    headerStyle = ExportCellStyle(
+        bold = true,
+        bgColor = ExportColor.LIGHT_YELLOW,
+        alignment = ExportAlignment.CENTER,
+        border = ExportBorder.THIN,
+    ),
+    bodyStyle = ExportCellStyle(
+        fontColor = ExportColor.DARK_RED,
+        alignment = ExportAlignment.RIGHT,
+    ),
+)
+val discount: Long
+----
+
+|===
+|속성 |설명
+
+|`preset`
+|스타일 프리셋 (기본: NONE)
+
+|`bold`
+|굵게
+
+|`italic`
+|기울임
+
+|`fontSize`
+|글자 크기 (-1: 기본)
+
+|`font`
+|폰트 (ExportFont)
+
+|`fontColor`
+|글자 색상
+
+|`bgColor`
+|배경 색상
+
+|`alignment`
+|정렬 (LEFT, CENTER, RIGHT)
+
+|`border`
+|테두리 (NONE, THIN, MEDIUM, THICK)
+
+|`borderColor`
+|테두리 색상
+|===
+
+=== 폰트 (ExportFont)
+
+사용 가능한 폰트입니다.
+
+|===
+|값 |폰트명
+
+|`DEFAULT`
+|시스템 기본
+
+|`ARIAL`
+|Arial
+
+|`CALIBRI`
+|Calibri
+
+|`TIMES_NEW_ROMAN`
+|Times New Roman
+
+|`MALGUN_GOTHIC`
+|맑은 고딕
+
+|`NANUM_GOTHIC`
+|나눔고딕
+
+|`NANUM_MYEONGJO`
+|나눔명조
+|===
+
+=== 대용량 처리
+
+==== 청크 내보내기
+
+메모리 효율적인 대용량 처리입니다.
+
+[source,kotlin]
+----
+exporter.exportWithChunks(UserExportDto::class, outputStream) { consumer ->
+    // 페이지 단위로 데이터 조회 및 내보내기
+    var page = 0
+    do {
+        val users = userRepository.findAll(PageRequest.of(page++, 1000))
+        consumer(users.content.map { it.toExportDto() })
+    } while (users.hasNext())
+}
+----
+
+==== OverflowStrategy
+
+시트당 최대 행(1,048,575) 초과 시 처리 전략입니다.
+
+|===
+|전략 |설명
+
+|`MULTI_SHEET`
+|자동으로 새 시트 생성 (기본값)
+
+|`EXCEPTION`
+|예외 발생
+|===
+
+[source,kotlin]
+----
+@ExportSheet(
+    name = "대용량 데이터",
+    overflowStrategy = OverflowStrategy.MULTI_SHEET,  // 기본값
+)
+data class LargeDataDto(...)
+----
+
+멀티시트 생성 시 시트명:
+
+* 첫 번째: `데이터`
+* 두 번째: `데이터 (2)`
+* 세 번째: `데이터 (3)`
+* ...
+
+=== CSV 옵션
+
+[source,kotlin]
+----
+val csvExporter = CsvExporter(
+    delimiter = ',',           // 구분자 (기본: ,)
+    includeHeader = true,      // 헤더 포함 (기본: true)
+    includeBom = true,         // BOM 포함 (기본: true, Excel 한글 호환)
+    charset = Charsets.UTF_8,  // 문자셋 (기본: UTF-8)
+)
+----
 
 == 설정 방법
 

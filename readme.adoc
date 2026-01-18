@@ -175,6 +175,9 @@ link:modules/common-web/readme.adoc[상세 문서 보기]
 
 |Async
 |Virtual Thread + MDC 컨텍스트 전파
+
+|Export
+|Excel/CSV 파일 내보내기 (어노테이션 기반, 스타일 프리셋)
 |===
 
 link:modules/infrastructure/readme.adoc[상세 문서 보기]
