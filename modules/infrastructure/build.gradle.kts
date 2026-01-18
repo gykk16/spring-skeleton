@@ -22,6 +22,9 @@ dependencies {
     // Apache POI (Excel Export)
     implementation(rootProject.libs.poi.ooxml)
 
+    // Slack SDK
+    implementation(rootProject.libs.slack.api.client)
+
     // RestClient (HTTP Client with tracing support)
     implementation(rootProject.libs.spring.boot.starter.restclient)
     implementation(rootProject.libs.spring.boot.starter.aspectj)

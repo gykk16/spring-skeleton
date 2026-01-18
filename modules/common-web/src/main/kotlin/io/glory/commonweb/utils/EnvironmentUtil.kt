@@ -9,7 +9,13 @@ class EnvironmentUtil(
     private val environment: Environment,
     //
     @param:Value("\${spring.profiles.active:}")
-    private val activeProfile: String = ""
+    private val activeProfile: String = "",
+    //
+    @param:Value("\${spring.application.name:test}")
+    private val name: String = "",
+    //
+    @param:Value("\${spring.application.version:0.0.0}")
+    private val version: String = ""
 ) {
 
     companion object {
@@ -43,6 +49,10 @@ class EnvironmentUtil(
     private val activeProfilesLazy: List<String> by lazy {
         environment.activeProfiles.toList()
     }
+
+    fun appName(): String = name
+
+    fun version(): String = version
 
     fun activeProfile(): String = activeProfile
 

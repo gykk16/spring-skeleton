@@ -14,6 +14,7 @@ kotlinx-coroutines = "1.10.2"
 kotlin-logging = "7.0.13"
 
 # Third-party (not managed by Spring BOM)
+slack-api = "1.46.0"
 poi = "5.5.1"
 querydsl = "7.1"
 redisson = "4.1.0"
@@ -69,6 +70,9 @@ mysql = { module = "com.mysql:mysql-connector-j" }
 # Apache POI (Excel)
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 
+# Slack SDK
+slack-api-client = { module = "com.slack.api:slack-api-client", version.ref = "slack-api" }
+
 # Cache
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine" }
 redisson-spring-boot-starter = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
@@ -96,6 +100,7 @@ kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref 
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-extensions-spring = { module = "io.kotest:kotest-extensions-spring", version.ref = "kotest" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version = "5.4.0" }
 
 # ####################
 # 라이브러리 묶음
@@ -151,6 +156,7 @@ test = [
     "kotest-assertions-core",
     "kotest-property",
     "kotest-extensions-spring",
+    "mockito-kotlin",
     #    "h2"
 ]
 
