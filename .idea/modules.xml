@@ -9,6 +9,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/modules/common/spring-skeleton.modules.common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/modules/common/spring-skeleton.modules.common.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/modules/common/spring-skeleton.modules.common.test.iml" filepath="$PROJECT_DIR$/.idea/modules/modules/common/spring-skeleton.modules.common.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/modules/infrastructure/spring-skeleton.modules.infrastructure.main.iml" filepath="$PROJECT_DIR$/.idea/modules/modules/infrastructure/spring-skeleton.modules.infrastructure.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/modules/infrastructure/spring-skeleton.modules.infrastructure.test.iml" filepath="$PROJECT_DIR$/.idea/modules/modules/infrastructure/spring-skeleton.modules.infrastructure.test.iml" />
     </modules>
   </component>
 </project>
