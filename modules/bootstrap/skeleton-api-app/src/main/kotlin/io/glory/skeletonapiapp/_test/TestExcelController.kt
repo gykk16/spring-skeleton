@@ -2,9 +2,7 @@ package io.glory.skeletonapiapp._test
 
 import io.glory.infrastructure.export.DataExporter
 import io.glory.infrastructure.export.ExportFormat
-import io.glory.infrastructure.export.annotation.ExportColumn
-import io.glory.infrastructure.export.annotation.ExportSheet
-import io.glory.infrastructure.export.annotation.OverflowStrategy
+import io.glory.infrastructure.export.annotation.*
 import io.glory.infrastructure.export.csv.CsvExporter
 import io.glory.infrastructure.export.excel.ExcelExporter
 import jakarta.servlet.http.HttpServletResponse
@@ -32,13 +30,14 @@ class TestExcelController(
         @RequestParam(defaultValue = "EXCEL") format: ExportFormat,
         response: HttpServletResponse,
     ) {
+        val filename = "test-export.${format.extension}"
         val validatedRowCount = rowCount.coerceIn(MIN_ROW_COUNT, MAX_ROW_COUNT)
         val data = generateDummyData(validatedRowCount)
 
         response.contentType = format.contentType
         response.setHeader(
             HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=test-export.${format.extension}"
+            "attachment; $filename"
         )
 
         getExporter(format).export(data, DummyExportDto::class, response.outputStream)
@@ -65,24 +64,45 @@ class TestExcelController(
 
     companion object {
         private const val MIN_ROW_COUNT = 1
-        private const val MAX_ROW_COUNT = 1_000_000
+        private const val MAX_ROW_COUNT = 1_050_000
     }
 
     @ExportSheet(name = "테스트데이터", overflowStrategy = OverflowStrategy.MULTI_SHEET)
     data class DummyExportDto(
-        @ExportColumn(header = "ID", order = 1, width = 10)
+        @ExportColumn(
+            header = "ID",
+            order = 1,
+            width = 10,
+            headerStyle = ExportCellStyle(
+                preset = ExportStylePreset.HEADER_DEFAULT,
+            ),
+            bodyStyle = ExportCellStyle(
+                preset = ExportStylePreset.BODY_DEFAULT,
+            )
+        )
         val id: Long,
         @ExportColumn(header = "이름", order = 2, width = 15)
         val name: String,
         @ExportColumn(header = "이메일", order = 3, width = 25)
         val email: String,
-        @ExportColumn(header = "금액", order = 4, width = 15, format = "#,##0")
+        @ExportColumn(
+            header = "금액", order = 4, width = 15, format = "#,##0",
+            bodyStyle = ExportCellStyle(
+                preset = ExportStylePreset.BODY_CURRENCY,
+                font = ExportFont.CONSOLAS,
+            )
+        )
         val amount: BigDecimal,
         @ExportColumn(header = "등록일", order = 5, width = 15)
         val registeredDate: LocalDate,
         @ExportColumn(header = "마지막 로그인", order = 6, width = 20, format = "yyyy-MM-dd HH:mm")
         val lastLoginAt: LocalDateTime,
-        @ExportColumn(header = "활성여부", order = 7, width = 10)
+        @ExportColumn(
+            header = "활성여부", order = 7, width = 10,
+            bodyStyle = ExportCellStyle(
+                preset = ExportStylePreset.BODY_WARNING,
+            )
+        )
         val isActive: Boolean,
     )
 }
