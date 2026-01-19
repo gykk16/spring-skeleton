@@ -140,8 +140,8 @@ spring-data = [
 ]
 
 jackson = [
-    #    "jackson-module-kotlin",
-    #    "jackson-datatype-jsr310"
+    "jackson-module-kotlin",
+#    "jackson-datatype-jsr310"
 ]
 
 cache = [
