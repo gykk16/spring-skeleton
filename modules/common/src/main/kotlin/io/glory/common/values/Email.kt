@@ -2,6 +2,7 @@ package io.glory.common.values
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
+import io.glory.common.utils.extensions.maskEmail
 
 /**
  * Represents an email address with validation.
@@ -112,14 +113,8 @@ value class Email private constructor(
      * @param maskChar character to use for masking (default: '*')
      * @return masked email string
      */
-    fun masked(visibleChars: Int = 2, maskChar: Char = '*'): String {
-        val local = localPart
-        return if (local.length <= visibleChars) {
-            value
-        } else {
-            "${local.take(visibleChars)}${maskChar.toString().repeat(local.length - visibleChars)}@$domain"
-        }
-    }
+    fun masked(visibleChars: Int = 2, maskChar: Char = '*'): String =
+        value.maskEmail(visibleChars, maskChar)
 
     override fun compareTo(other: Email): Int = value.compareTo(other.value)
 
