@@ -7,7 +7,7 @@ import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.block.LayoutBlock
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.glory.infrastructure.slack.message.SlackMessage
-import io.glory.common.utils.coroutine.CoroutineUtils.runBlockingWithMDC
+import io.glory.common.utils.coroutine.runBlockingWithMDC
 import kotlinx.coroutines.delay
 import org.springframework.stereotype.Component
 

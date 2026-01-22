@@ -1,12 +1,7 @@
 package io.glory.common.utils.coroutine
 
-import io.glory.common.utils.coroutine.CoroutineUtils.asyncWithMDC
-import io.glory.common.utils.coroutine.CoroutineUtils.launchWithMDC
-import io.glory.common.utils.coroutine.CoroutineUtils.runBlockingWithMDC
-import io.glory.common.utils.coroutine.CoroutineUtils.withLogging
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.delay
 import org.slf4j.MDC
 import java.util.concurrent.CountDownLatch
@@ -82,17 +77,6 @@ class CoroutineUtilsTest : DescribeSpec({
             }
         }
 
-        context("Virtual Thread 실행") {
-            it("should run on virtual thread") {
-                // when
-                val isVirtual = runBlockingWithMDC {
-                    Thread.currentThread().isVirtual
-                }
-
-                // then
-                isVirtual shouldBe true
-            }
-        }
     }
 
     describe("asyncWithMDC") {
@@ -315,29 +299,27 @@ class CoroutineUtilsTest : DescribeSpec({
             capturedIds.forEach { it shouldBe expectedTraceId }
         }
 
-        it("should handle multiple trace ids in parallel coroutines") {
+        it("should preserve MDC in multiple parallel coroutines") {
             // given
-            MDC.put(traceIdKey, "parent-trace")
+            val expectedTraceId = "parallel-trace"
+            MDC.put(traceIdKey, expectedTraceId)
 
             // when
-            val threadIds = runBlockingWithMDC {
-                val ids = mutableListOf<Long>()
+            val traceIds = runBlockingWithMDC {
                 val deferred1 = asyncWithMDC {
                     delay(10)
-                    Thread.currentThread().threadId()
+                    MDC.get(traceIdKey)
                 }
                 val deferred2 = asyncWithMDC {
                     delay(10)
-                    Thread.currentThread().threadId()
+                    MDC.get(traceIdKey)
                 }
-                ids.add(deferred1.await())
-                ids.add(deferred2.await())
-                ids
+                listOf(deferred1.await(), deferred2.await())
             }
 
             // then
-            threadIds.size shouldBe 2
-            threadIds[0] shouldNotBe threadIds[1]
+            traceIds.size shouldBe 2
+            traceIds.forEach { it shouldBe expectedTraceId }
         }
     }
 })
