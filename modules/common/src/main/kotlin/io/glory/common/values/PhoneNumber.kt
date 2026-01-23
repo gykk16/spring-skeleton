@@ -31,8 +31,9 @@ import io.glory.common.utils.extensions.maskDigits
  * phone1.regionCode         // "KR"
  *
  * // Masking for privacy (toString() also returns masked value)
- * phone1.masked()           // "+82 **-****-5678"
- * phone1.toString()         // "+82 **-****-5678"
+ * phone1.masked()               // "***-****-5678" (national format)
+ * phone1.maskedInternational()  // "+82 **-****-5678"
+ * phone1.toString()             // "***-****-5678"
  * ```
  *
  * @property value the phone number in E.164 format
@@ -225,37 +226,37 @@ value class PhoneNumber private constructor(
     fun toRfc3966(): String = phoneUtil.format(parsedNumber, PhoneNumberFormat.RFC3966)
 
     /**
-     * Returns a masked version of the phone number for privacy.
-     * Preserves country code and masks digits except the last N.
+     * Returns a masked version of the phone number in national format.
      *
      * Examples:
-     * - "+821012345678".masked() -> "+82 **-****-5678" (Korean mobile)
-     * - "+14155551234".masked() -> "+1 ***-***-1234" (US)
-     *
-     * @param visibleDigits number of digits to show at the end (default: 4)
-     * @param maskChar character to use for masking (default: '*')
-     * @return masked phone number in international format with country code visible
-     */
-    fun masked(visibleDigits: Int = 4, maskChar: Char = '*'): String {
-        val international = toInternational()
-        val countryCodePrefix = "+$countryCode "
-        val nationalPart = international.removePrefix(countryCodePrefix)
-        return countryCodePrefix + nationalPart.maskDigits(visibleDigits, maskChar)
-    }
-
-    /**
-     * Returns a masked version showing only last N digits in national format.
-     *
-     * Examples:
-     * - "+821012345678".maskedNational() -> "***-****-5678"
-     * - "+821012345678".maskedNational(2) -> "***-****-**78"
+     * - "+821012345678".masked() -> "***-****-5678"
+     * - "+821012345678".masked(2) -> "***-****-**78"
      *
      * @param visibleDigits number of digits to show at the end (default: 4)
      * @param maskChar character to use for masking (default: '*')
      * @return masked phone number in national format
      */
-    fun maskedNational(visibleDigits: Int = 4, maskChar: Char = '*'): String =
+    fun masked(visibleDigits: Int = 4, maskChar: Char = '*'): String =
         toNational().maskDigits(visibleDigits, maskChar)
+
+    /**
+     * Returns a masked version of the phone number in international format.
+     * Preserves country code and masks digits except the last N.
+     *
+     * Examples:
+     * - "+821012345678".maskedInternational() -> "+82 **-****-5678" (Korean mobile)
+     * - "+14155551234".maskedInternational() -> "+1 ***-***-1234" (US)
+     *
+     * @param visibleDigits number of digits to show at the end (default: 4)
+     * @param maskChar character to use for masking (default: '*')
+     * @return masked phone number in international format with country code visible
+     */
+    fun maskedInternational(visibleDigits: Int = 4, maskChar: Char = '*'): String {
+        val international = toInternational()
+        val countryCodePrefix = "+$countryCode "
+        val nationalPart = international.removePrefix(countryCodePrefix)
+        return countryCodePrefix + nationalPart.maskDigits(visibleDigits, maskChar)
+    }
 
     // =============================================================================
     // Comparison & Utility Methods

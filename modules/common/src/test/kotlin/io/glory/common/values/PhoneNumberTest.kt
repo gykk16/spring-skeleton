@@ -343,7 +343,7 @@ class PhoneNumberTest {
     inner class Masking {
 
         @Test
-        fun `should mask Korean mobile number preserving country code`(): Unit {
+        fun `should mask Korean mobile number in national format by default`(): Unit {
             // given
             val phone = PhoneNumber.of("+821012345678")
 
@@ -351,7 +351,7 @@ class PhoneNumberTest {
             val masked = phone.masked()
 
             // then
-            assertThat(masked).isEqualTo("+82 **-****-5678")
+            assertThat(masked).isEqualTo("***-****-5678")
         }
 
         @Test
@@ -363,11 +363,11 @@ class PhoneNumberTest {
             val masked = phone.masked(maskChar = '#')
 
             // then
-            assertThat(masked).isEqualTo("+82 ##-####-5678")
+            assertThat(masked).isEqualTo("###-####-5678")
         }
 
         @Test
-        fun `should mask US phone number preserving country code`(): Unit {
+        fun `should mask US phone number in national format by default`(): Unit {
             // given
             val phone = PhoneNumber.of("+14155551234")
 
@@ -375,31 +375,55 @@ class PhoneNumberTest {
             val masked = phone.masked()
 
             // then
+            assertThat(masked).isEqualTo("(***) ***-1234")
+        }
+
+        @Test
+        fun `should mask with custom visible digits`(): Unit {
+            // given
+            val phone = PhoneNumber.of("+821012345678")
+
+            // when
+            val masked = phone.masked(visibleDigits = 2)
+
+            // then
+            assertThat(masked).isEqualTo("***-****-**78")
+        }
+
+        @Test
+        fun `should mask international format preserving country code`(): Unit {
+            // given
+            val phone = PhoneNumber.of("+821012345678")
+
+            // when
+            val masked = phone.maskedInternational()
+
+            // then
+            assertThat(masked).isEqualTo("+82 **-****-5678")
+        }
+
+        @Test
+        fun `should mask US phone number in international format`(): Unit {
+            // given
+            val phone = PhoneNumber.of("+14155551234")
+
+            // when
+            val masked = phone.maskedInternational()
+
+            // then
             assertThat(masked).isEqualTo("+1 ***-***-1234")
         }
 
         @Test
-        fun `should mask national format`(): Unit {
+        fun `should mask international format with custom character`(): Unit {
             // given
             val phone = PhoneNumber.of("+821012345678")
 
             // when
-            val masked = phone.maskedNational()
+            val masked = phone.maskedInternational(maskChar = '#')
 
             // then
-            assertThat(masked).isEqualTo("***-****-5678")
-        }
-
-        @Test
-        fun `should mask national format with custom visible digits`(): Unit {
-            // given
-            val phone = PhoneNumber.of("+821012345678")
-
-            // when
-            val masked = phone.maskedNational(visibleDigits = 2)
-
-            // then
-            assertThat(masked).isEqualTo("***-****-**78")
+            assertThat(masked).isEqualTo("+82 ##-####-5678")
         }
     }
 
@@ -523,12 +547,12 @@ class PhoneNumberTest {
     inner class ToStringTest {
 
         @Test
-        fun `toString should return masked value for privacy`(): Unit {
+        fun `toString should return masked national format for privacy`(): Unit {
             // given
             val phone = PhoneNumber.of("+821012345678")
 
             // when & then
-            assertThat(phone.toString()).isEqualTo("+82 **-****-5678")
+            assertThat(phone.toString()).isEqualTo("***-****-5678")
         }
     }
 
