@@ -560,6 +560,47 @@ data class User(
 val updated = user.copy(name = "New Name")
 ```
 
+### Value Objects (from common module)
+
+> **IMPORTANT**: 원시 타입 대신 `io.glory.common.values` 패키지의 값 객체를 사용하세요.
+
+```kotlin
+// Bad: 원시 타입 사용
+data class User(
+    val email: String,      // 유효성 미검증
+    val phone: String,      // 형식 불일치
+    val balance: BigDecimal // 통화 정보 없음
+)
+
+// Good: 값 객체 사용
+import io.glory.common.values.Email
+import io.glory.common.values.PhoneNumber
+import io.glory.common.values.Money
+
+data class User(
+    val email: Email,       // 유효성 검증, 마스킹
+    val phone: PhoneNumber, // 자동 파싱/포맷팅
+    val balance: Money      // 통화 포함, 타입 안전 연산
+)
+
+// 생성
+val email = "user@example.com".asEmail
+val phone = "010-1234-5678".asPhoneNumber
+val money = 10000L.krw
+val rate = 15.percent
+```
+
+**사용 가능한 값 객체:**
+
+| 타입 | 용도 | 예시 |
+|------|------|------|
+| `Email` | 이메일 | `Email.of("a@b.com")`, `"a@b.com".asEmail` |
+| `PhoneNumber` | 전화번호 | `PhoneNumber.of("010-1234-5678")` |
+| `Money` | 금액 | `Money.krw(10000)`, `10000L.krw` |
+| `Rate` | 비율/퍼센트 | `Rate.ofPercent(15)`, `15.percent` |
+
+> 자세한 사용법: `modules/common/README.adoc` 또는 `.claude/rules/20_common-module.md` 참조
+
 ### Sealed Classes
 
 ```kotlin
@@ -620,18 +661,43 @@ createUser(
 
 ## Error Handling
 
+> **IMPORTANT**: 예외 처리 시 `io.glory.common.exceptions` 패키지의 예외 클래스를 사용하세요.
+
 ### Nullable for Expected Absence
 
 ```kotlin
 fun findUser(id: Long): User? = userRepository.findById(id)
 ```
 
-### Exceptions for Unexpected Errors
+### Exceptions (from common module)
 
 ```kotlin
-fun findUserOrThrow(id: Long): User =
-    userRepository.findById(id)
-        ?: throw UserNotFoundException(id)
+import io.glory.common.exceptions.KnownException
+import io.glory.common.exceptions.BizRuntimeException
+import io.glory.common.codes.response.ErrorCode
+
+// 예상된 에러 (validation, not found) - 스택 트레이스 없음
+class UserNotFoundException(id: Long) : KnownException(
+    ErrorCode.DATA_NOT_FOUND,
+    "User not found: $id"
+)
+
+// 비즈니스 에러 - 스택 트레이스 포함
+throw BizRuntimeException(ErrorCode.ILLEGAL_STATE, "Invalid state")
+```
+
+### Precondition 검증 (from common module)
+
+```kotlin
+import io.glory.common.utils.knownRequired
+import io.glory.common.utils.knownRequiredNotNull
+
+// require 대신 knownRequired 사용 (KnownException 발생)
+knownRequired(amount > 0) { "Amount must be positive" }
+
+val user = knownRequiredNotNull(repository.findById(id)) {
+    "User not found: $id"
+}
 ```
 
 ### Result Pattern for Expected Failures
