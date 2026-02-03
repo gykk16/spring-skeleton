@@ -4,11 +4,7 @@ import io.glory.testsupport.restdocs.RestDocsSupport
 import org.junit.jupiter.api.Test
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.payload.JsonFieldType
-import org.springframework.restdocs.payload.PayloadDocumentation.applyPathPrefix
-import org.springframework.restdocs.payload.PayloadDocumentation.beneathPath
-import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
-import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
-import org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath
+import org.springframework.restdocs.payload.PayloadDocumentation.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 open class CommonResponseDocsTest : RestDocsSupport() {
@@ -16,7 +12,7 @@ open class CommonResponseDocsTest : RestDocsSupport() {
     override fun initController(): Any = CommonResponseController()
 
     @Test
-    open fun `common response format`(): Unit {
+    open fun `common response format`() {
         mockMvc.perform(get("/docs/response"))
             .andExpect(status().isOk)
             .andDo(
@@ -39,7 +35,7 @@ open class CommonResponseDocsTest : RestDocsSupport() {
     }
 
     @Test
-    open fun `common page format`(): Unit {
+    open fun `common page format`() {
         mockMvc.perform(get("/docs/response/page"))
             .andExpect(status().isOk)
             .andDo(
@@ -58,7 +54,7 @@ open class CommonResponseDocsTest : RestDocsSupport() {
     }
 
     @Test
-    open fun `common no offset page format`(): Unit {
+    open fun `common no offset page format`() {
         mockMvc.perform(get("/docs/response/no-offset-page"))
             .andExpect(status().isOk)
             .andDo(

@@ -8,7 +8,6 @@ import org.slf4j.MDC
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import tools.jackson.databind.json.JsonMapper
-import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

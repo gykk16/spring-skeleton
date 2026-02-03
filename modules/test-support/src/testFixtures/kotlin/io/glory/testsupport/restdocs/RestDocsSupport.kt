@@ -1,10 +1,7 @@
 package io.glory.testsupport.restdocs
 
-import io.glory.testsupport.restdocs.DocsFieldType.ARRAY
-import io.glory.testsupport.restdocs.DocsFieldType.BOOLEAN
-import io.glory.testsupport.restdocs.DocsFieldType.NUMBER
-import io.glory.testsupport.restdocs.DocsFieldType.OBJECT
-import io.glory.testsupport.restdocs.DocsFieldType.STRING
+import io.glory.testsupport.restdocs.DocsFieldType.*
+import io.glory.testsupport.restdocs.RestDocsSupport.Companion.dataResponseFields
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
@@ -15,9 +12,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.restdocs.payload.JsonFieldType
-import org.springframework.restdocs.payload.PayloadDocumentation.applyPathPrefix
-import org.springframework.restdocs.payload.PayloadDocumentation.beneathPath
-import org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath
+import org.springframework.restdocs.payload.PayloadDocumentation.*
 import org.springframework.restdocs.payload.ResponseFieldsSnippet
 import org.springframework.restdocs.request.ParameterDescriptor
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
@@ -290,7 +285,7 @@ abstract class RestDocsSupport {
          * ```
          */
         fun dataResponseFields(vararg dataFields: Field): ResponseFieldsSnippet =
-            org.springframework.restdocs.payload.PayloadDocumentation.responseFields(
+            responseFields(
                 beneathPath("data").withSubsectionId("data"),
                 *fields(*dataFields),
             )

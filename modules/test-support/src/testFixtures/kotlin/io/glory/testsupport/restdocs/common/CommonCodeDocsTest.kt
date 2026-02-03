@@ -17,7 +17,7 @@ open class CommonCodeDocsTest : RestDocsSupport() {
     override fun initController(): Any = CommonResponseController()
 
     @Test
-    open fun `response codes`(): Unit {
+    open fun `response codes`() {
         // given
         val result = mockMvc.perform(
             get("/docs/response-codes")

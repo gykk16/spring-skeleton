@@ -8,7 +8,6 @@ import org.slf4j.MDC
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import tools.jackson.databind.json.JsonMapper
-import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -29,6 +28,7 @@ abstract class IntegratedEmbedTestSupport {
     fun setUpMdc() {
         MDC.put("X-ZZ-TraceId", Uuid.generateV7().toString())
     }
+
     @AfterEach
     fun clearMdc() {
         MDC.clear()
