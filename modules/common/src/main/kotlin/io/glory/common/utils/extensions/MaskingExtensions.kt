@@ -108,7 +108,7 @@ fun String.maskEmail(visibleChars: Int = 2, maskChar: Char = MASK_CHAR): String 
     if (localPart.length <= visibleChars) return this
 
     val maskedLocal = localPart.take(visibleChars) +
-        maskChar.toString().repeat(localPart.length - visibleChars)
+            maskChar.toString().repeat(localPart.length - visibleChars)
 
     return "$maskedLocal@$domainPart"
 }

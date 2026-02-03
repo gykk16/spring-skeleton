@@ -48,6 +48,6 @@ internal inline fun KLogger.log(level: Level, crossinline message: () -> String)
         Level.INFO -> info { message() }
         Level.WARNING -> warn { message() }
         Level.ERROR -> error { message() }
-        Level.ALL, Level.OFF -> { }
+        Level.ALL, Level.OFF -> {}
     }
 }

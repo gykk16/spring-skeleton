@@ -47,7 +47,7 @@ logging:
     query: debug
     bind: trace
     hikari: debug
-    
+  
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5.5p) [%15.15t] [%clr(%-32.32X{traceId:-}){magenta},%clr(%-16.16X{spanId:-})] --- %clr(%-40.40logger{39}){cyan} : %m%n%throwable"
 
