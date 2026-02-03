@@ -9,18 +9,16 @@
 
 == Design Philosophy
 
-=== Hexagonal Architecture (Ports & Adapters)
+=== Layered Multi-Module Architecture
 
-This skeleton project implements Hexagonal Architecture to achieve:
+This project adopts a pragmatic **layered multi-module approach with dependency inversion**, drawing inspiration from both Layered Architecture and Hexagonal Architecture (Ports & Adapters):
 
 * **Separation of Concerns**: Business logic isolated from technical infrastructure
 * **Testability**: Core business rules testable without external dependencies
 * **Flexibility**: Easy to swap implementations (e.g., databases, message brokers)
 * **Maintainability**: Clear boundaries between layers reduce coupling
 
-=== This Project's Interpretation
-
-Rather than a strict Hexagonal Architecture with explicit port interfaces, this project adopts a pragmatic **layered multi-module approach with dependency inversion**:
+=== Key Design Decisions
 
 * **Ports** are implicit - application modules define contracts (service interfaces, DTOs)
 * **Adapters** are explicit - infrastructure module implements technical concerns
@@ -598,4 +596,4 @@ Current setup uses single database with JPA. For multi-database scenarios:
 * link:../../modules/common/README.adoc[Common Module Documentation]
 * link:../../modules/infrastructure/README.adoc[Infrastructure Module Documentation]
 * Spring Boot Reference: https://docs.spring.io/spring-boot/reference/
-* Hexagonal Architecture: https://alistair.cockburn.us/hexagonal-architecture/
+* Hexagonal Architecture (reference): https://alistair.cockburn.us/hexagonal-architecture/

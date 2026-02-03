@@ -1,8 +1,8 @@
 # Project Modules & Architecture
 
-## Hexagonal Architecture
+## Architecture
 
-이 프로젝트는 Hexagonal Architecture (Ports & Adapters) 패턴을 따릅니다.
+이 프로젝트는 Layered Architecture와 Ports & Adapters 패턴의 장점을 결합한 구조를 따릅니다.
 
 ```mermaid
 graph TB

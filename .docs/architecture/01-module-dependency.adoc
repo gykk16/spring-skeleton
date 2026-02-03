@@ -11,7 +11,7 @@ This document describes the module structure, dependency relationships, and buil
 
 == Module Inventory
 
-The project consists of 7 modules (6 active + 1 planned) following hexagonal architecture principles:
+The project consists of 7 modules (6 active + 1 planned) following layered architecture principles with dependency inversion:
 
 [cols="3,2,3,5", options="header"]
 |===
