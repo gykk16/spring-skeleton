@@ -38,6 +38,22 @@ Claude Code automatically reads rules from this directory.
 ./gradlew test --tests "io.glory.common.utils.SomeTest"
 ```
 
+## Documentation
+
+Project documentation is maintained in the `.docs/` directory:
+
+- `.docs/versioning-and-release.adoc` - Versioning and release guide
+- `.docs/architecture/` - Architecture documentation
+  - `00-overview.adoc` - Project overview
+  - `01-module-dependency.adoc` - Module dependency structure
+  - `02-request-lifecycle.adoc` - Request lifecycle
+  - `03-error-handling.adoc` - Error handling strategy
+  - `04-caching-strategy.adoc` - Caching strategy
+  - `05-http-client-patterns.adoc` - HTTP client patterns
+  - `06-cross-cutting-concerns.adoc` - Cross-cutting concerns (AOP, filters)
+  - `07-api-response-format.adoc` - API response format and ResponseCode
+  - `08-new-module-guide.adoc` - Guide for creating new modules
+
 ## Project Structure
 
 - `modules/common` - Common utilities and shared code
