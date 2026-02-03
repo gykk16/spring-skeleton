@@ -2,11 +2,14 @@
 
 dependencies {
     val developmentOnly by configurations
-    
+
     implementation(project(":modules:application:todo-application"))
 
     // Development
     developmentOnly(rootProject.libs.spring.boot.docker.compose)
+
+    // Test
+    testImplementation(testFixtures(project(":modules:test-support")))
 }
 
 tasks.processResources {

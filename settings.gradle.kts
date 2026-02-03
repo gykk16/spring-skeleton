@@ -4,6 +4,7 @@ include(
     // Foundation
     "modules:common",
     "modules:common-web",
+    "modules:test-support",
 
     // Infrastructure
     "modules:infrastructure",

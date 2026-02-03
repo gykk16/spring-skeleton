@@ -23,6 +23,7 @@ lz4 = "1.10.2"
 kotest = "6.0.7"
 springdoc = "3.0.1"
 springdoc-kotlin = "1.8.0"
+mockk = "1.14.2"
 
 # ####################
 # 라이브러리 정의
@@ -106,6 +107,8 @@ kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-extensions-spring = { module = "io.kotest:kotest-extensions-spring", version.ref = "kotest" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version = "5.4.0" }
+spring-restdocs = { module = "org.springframework.restdocs:spring-restdocs-mockmvc" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # ####################
 # 라이브러리 묶음
@@ -164,6 +167,19 @@ test = [
     "kotest-extensions-spring",
     "mockito-kotlin",
     #    "h2"
+]
+
+test-fixtures = [
+    "spring-boot-starter-test",
+    "spring-boot-starter-webmvc",
+    "spring-data-commons",
+    "spring-restdocs",
+    "kotest-runner-junit5",
+    "kotest-assertions-core",
+    "kotest-property",
+    "kotest-extensions-spring",
+    "mockito-kotlin",
+    "mockk",
 ]
 
 openapi = [

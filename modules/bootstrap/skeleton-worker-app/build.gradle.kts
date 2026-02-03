@@ -5,6 +5,9 @@ dependencies {
 
     // Development
     developmentOnly(rootProject.libs.spring.boot.docker.compose)
+
+    // Test
+    testImplementation(testFixtures(project(":modules:test-support")))
 }
 
 tasks.processResources {

@@ -79,6 +79,14 @@ Libraries without explicit versions are managed by Spring Boot BOM.
 | 6.0.7
 | https://github.com/kotest/kotest/releases
 
+| MockK
+| 1.14.2
+| https://github.com/mockk/mockk/releases
+
+| Mockito Kotlin
+| 5.4.0
+| https://github.com/mockito/mockito-kotlin/releases
+
 | SpringDoc OpenAPI
 | 3.0.1
 | https://github.com/springdoc/springdoc-openapi/releases
@@ -114,6 +122,9 @@ Libraries without explicit versions are managed by Spring Boot BOM.
 
 | MySQL Connector/J
 | https://github.com/mysql/mysql-connector-j/releases
+
+| Spring REST Docs
+| https://github.com/spring-projects/spring-restdocs/releases
 
 | Jakarta Persistence API
 | https://github.com/jakartaee/persistence/releases
