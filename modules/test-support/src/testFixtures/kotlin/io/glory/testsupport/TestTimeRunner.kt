@@ -1,23 +1,45 @@
 package io.glory.testsupport
 
+import kotlin.time.Duration
+import kotlin.time.measureTime
+
 /**
  * Utility for measuring test execution time.
  *
  * Usage:
  * ```kotlin
- * val elapsed = TestTimeRunner.timeTest(1000, "my operation") {
+ * // Simple measurement
+ * val elapsed = TestTimeRunner.measure("my operation") {
  *     myService.process()
- *     "done"
+ * }
+ *
+ * // With loop count
+ * val elapsed = TestTimeRunner.measure("my operation", loopCount = 1000) {
+ *     myService.process()
+ * }
+ *
+ * // With warm-up iterations
+ * val elapsed = TestTimeRunner.measure("my operation", loopCount = 1000, warmUp = 100) {
+ *     myService.process()
  * }
  * ```
  */
 object TestTimeRunner {
 
-    fun timeTest(loopCount: Int, testName: String, block: () -> Any): Long {
-        val start = System.currentTimeMillis()
-        repeat(loopCount) { block() }
-        val elapsed = System.currentTimeMillis() - start
-        println("==> $testName , elapsed = $elapsed ms")
+    fun measure(
+        testName: String,
+        loopCount: Int = 1,
+        warmUp: Int = 0,
+        block: () -> Any,
+    ): Duration {
+        repeat(warmUp) { block() }
+
+        val elapsed = measureTime {
+            repeat(loopCount) { block() }
+        }
+
+        println("==> $testName, elapsed = ${elapsed.inWholeMilliseconds} ms")
         return elapsed
     }
+
 }
