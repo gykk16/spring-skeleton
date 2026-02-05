@@ -105,6 +105,17 @@ abstract class RestDocsSupport {
         ).map { it.descriptor }
 
         /**
+         * API response wrapper: status, meta, data (string)
+         *
+         * Use for void/delete operations that return empty string data.
+         */
+        fun resourceStringCommonFormat(): List<FieldDescriptor> = listOf(
+            "status" type OBJECT means "Status information",
+            "meta" type OBJECT means "Meta information",
+            "data" type STRING means "Response data",
+        ).map { it.descriptor }
+
+        /**
          * Status object fields: status, code, message
          */
         fun statusCommonFormat(): List<FieldDescriptor> = listOf(
@@ -206,6 +217,22 @@ abstract class RestDocsSupport {
          */
         fun responseArrayCommonFields(): Array<FieldDescriptor> = arrayOf(
             *resourceArrayCommonFormat().toTypedArray(),
+            *applyPathPrefix("status.", statusCommonFormat()).toTypedArray(),
+            *applyPathPrefix("meta.", metaCommonFormat()).toTypedArray(),
+        )
+
+        /**
+         * Common response fields for string data response (e.g., void/delete operations).
+         *
+         * Includes: status (OBJECT), status.*, meta (OBJECT), meta.*, data (STRING)
+         *
+         * Usage:
+         * ```kotlin
+         * responseFields(*responseStringCommonFields())
+         * ```
+         */
+        fun responseStringCommonFields(): Array<FieldDescriptor> = arrayOf(
+            *resourceStringCommonFormat().toTypedArray(),
             *applyPathPrefix("status.", statusCommonFormat()).toTypedArray(),
             *applyPathPrefix("meta.", metaCommonFormat()).toTypedArray(),
         )

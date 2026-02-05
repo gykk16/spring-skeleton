@@ -51,7 +51,7 @@ spring:
   jpa:
     #    show-sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     properties:
       hibernate:
         #        show_sql: false

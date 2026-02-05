@@ -13,6 +13,9 @@ dependencies {
     val annotationProcessor by configurations
     val runtimeOnly by configurations
 
+    // Spring Boot (for EntityScan annotation)
+    implementation(rootProject.libs.spring.boot.starter)
+
     // Spring Data & QueryDSL
     implementation(rootProject.libs.bundles.spring.data)
 

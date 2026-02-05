@@ -10,10 +10,11 @@ include(
     "modules:infrastructure",
 
     // Core Business
-//    "modules:domain",
-    "modules:application:todo-application",
+    "modules:domain",
+    "modules:application:common-application",
 
     // Runtime
+    "modules:bootstrap:common-api-app",
     "modules:bootstrap:skeleton-api-app",
     "modules:bootstrap:skeleton-worker-app",
 )

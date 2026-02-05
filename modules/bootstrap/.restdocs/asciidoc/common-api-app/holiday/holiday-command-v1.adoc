@@ -1,0 +1,127 @@
+= Holiday API - 등록/수정/삭제
+Holiday API 등록/수정/삭제 연동 가이드
+:snippets: ../../../../common-api-app/build/generated-snippets/holiday-controller-docs-test
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:table-stripes: hover
+:sectanchors:
+:sectnums:
+:sectnumlevels: 2
+
+
+= Overview
+
+.본 문서는 Holiday API 등록/수정/삭제 기능을 연동하기 위한 문서입니다.
+[NOTE]
+--
+- 공휴일 등록, 수정, 삭제 기능을 제공합니다.
+- 단건 및 대량 등록 기능을 지원합니다.
+--
+
+[[api-req-res]]
+include::{docdir}/../../.templates/template-api-req-res.adoc[]
+
+== APIs
+
+=== 등록
+
+[[create]]
+==== 공휴일 등록
+
+[NOTE]
+--
+- 단건 공휴일을 등록합니다.
+--
+
+===== Http Request
+
+include::{snippets}/create holiday/http-request.adoc[]
+
+.Request Fields
+include::{snippets}/create holiday/request-fields.adoc[]
+
+===== Http Response
+
+include::{snippets}/create holiday/http-response.adoc[]
+
+.Response Fields `data`
+include::{snippets}/create holiday/response-fields-data.adoc[]
+
+'''
+
+[[create-bulk]]
+==== 공휴일 대량 등록
+
+[NOTE]
+--
+- 여러 공휴일을 한번에 등록합니다.
+--
+
+===== Http Request
+
+include::{snippets}/create holidays bulk/http-request.adoc[]
+
+.Request Fields
+include::{snippets}/create holidays bulk/request-fields.adoc[]
+
+===== Http Response
+
+include::{snippets}/create holidays bulk/http-response.adoc[]
+
+.Response Fields `data`
+include::{snippets}/create holidays bulk/response-fields-data.adoc[]
+
+'''
+
+=== 수정
+
+[[update]]
+==== 공휴일 수정
+
+[NOTE]
+--
+- 기존 공휴일 정보를 수정합니다.
+--
+
+===== Http Request
+
+include::{snippets}/update holiday/http-request.adoc[]
+
+.Path Parameters
+include::{snippets}/update holiday/path-parameters.adoc[]
+
+.Request Fields
+include::{snippets}/update holiday/request-fields.adoc[]
+
+===== Http Response
+
+include::{snippets}/update holiday/http-response.adoc[]
+
+.Response Fields `data`
+include::{snippets}/update holiday/response-fields-data.adoc[]
+
+'''
+
+=== 삭제
+
+[[delete]]
+==== 공휴일 삭제
+
+[NOTE]
+--
+- 공휴일을 삭제합니다.
+--
+
+===== Http Request
+
+include::{snippets}/delete holiday/http-request.adoc[]
+
+.Path Parameters
+include::{snippets}/delete holiday/path-parameters.adoc[]
+
+===== Http Response
+
+include::{snippets}/delete holiday/http-response.adoc[]
