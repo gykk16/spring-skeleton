@@ -17,4 +17,7 @@ include(
     "modules:bootstrap:common-api-app",
     "modules:bootstrap:skeleton-api-app",
     "modules:bootstrap:skeleton-worker-app",
+
+    // Documentation
+    "modules:docs",
 )

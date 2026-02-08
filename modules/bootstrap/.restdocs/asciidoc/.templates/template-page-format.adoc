@@ -1,4 +1,0 @@
-:common-snippets: ../../../../../modules/test-support/build/generated-snippets
-
-.Page Fields
-include::{common-snippets}/common-response-docs-test/common page format/response-fields-data.page.adoc[]

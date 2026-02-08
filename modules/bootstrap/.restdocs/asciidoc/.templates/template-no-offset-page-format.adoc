@@ -1,4 +1,0 @@
-:common-snippets: ../../../../../modules/test-support/build/generated-snippets
-
-.No Offset Page Fields
-include::{common-snippets}/common-response-docs-test/common no offset page format/response-fields-data.no-offset.adoc[]
