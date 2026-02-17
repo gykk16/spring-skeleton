@@ -16,30 +16,35 @@
 ----
 class HolidayControllerDocsTest : RestDocsSupport() {
 
-    private val holidayService: HolidayService = mock()
+    private val holidayFacade: HolidayFacade = mock()
 
-    override fun initController(): Any = HolidayController(holidayService)
+    override fun initController(): Any = HolidayController(holidayFacade)
 
     // 각 엔드포인트별 테스트 메서드...
 }
 ----
 
-=== GET - 배열 응답 (Subsection 전략)
+=== GET - 배열 응답 (연도별 조회, 페이징)
 
 [source,kotlin]
 ----
 @Test
 fun `get holidays by year`(): Unit {
-    // given - 배열 응답 설정
+    // given - 페이징된 배열 응답 설정
     val holidays = listOf(
-        Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
-        Holiday(2L, LocalDate.of(2026, 2, 17), "설날"),
-        Holiday(3L, LocalDate.of(2026, 3, 1), "삼일절"),
+        HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+        HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
+        HolidayDto(3L, LocalDate.of(2026, 3, 1), "삼일절"),
     )
-    given(holidayService.findByYear(2026)).willReturn(holidays)
+    val page = PageImpl(holidays, PageRequest.of(0, 20), holidays.size.toLong())
+    given(holidayFacade.findPageByYear(any(), any())).willReturn(page)
 
     // when & then
-    mockMvc.perform(get("/api/holidays/{year}", 2026))
+    mockMvc.perform(
+        get("/api/holidays/{year}", 2026)
+            .param("page", "0")
+            .param("size", "20")
+    )
         .andExpect(status().isOk)
         .andDo(
             restDocs.document(
@@ -47,9 +52,113 @@ fun `get holidays by year`(): Unit {
                 pathParameters(
                     parameterWithName("year").description("조회할 연도"),
                 ),
-                // Subsection 전략: status/meta 필드 정의
+                // 쿼리 파라미터 (페이징)
+                queryParameters(
+                    *pageRequestFormat().toTypedArray(),
+                ),
+                // Subsection 전략: status/meta/data[] 필드 정의
+                responseFields(
+                    *responseArrayCommonFieldsSubsection(),
+                    subsectionWithPath("meta.pageInfo").type(JsonFieldType.OBJECT)
+                        .optional().description("페이지 정보"),
+                ),
+                // 페이지 정보 필드
+                responseFields(
+                    beneathPath("meta.pageInfo").withSubsectionId("data.page"),
+                    *pageCommonFormat().toTypedArray(),
+                ),
+                // data[] 필드 별도 정의
+                dataResponseFields(
+                    "id" type NUMBER means "공휴일 ID",
+                    "holidayDate" type DATE means "공휴일 날짜",
+                    "name" type STRING means "공휴일 이름",
+                ),
+            )
+        )
+}
+----
+
+생성된 스니펫:
+* `get-holidays-by-year/path-parameters.adoc` - 경로 파라미터
+* `get-holidays-by-year/query-parameters.adoc` - 쿼리 파라미터 (페이징)
+* `get-holidays-by-year/response-fields.adoc` - status, meta, data[] 필드
+* `get-holidays-by-year/response-fields-data.page.adoc` - 페이지 정보
+* `get-holidays-by-year/response-fields-data.adoc` - data 필드
+
+=== GET - 배열 응답 (연도/월별 조회, 페이징)
+
+[source,kotlin]
+----
+@Test
+fun `get holidays by year and month`(): Unit {
+    // given
+    val holidays = listOf(
+        HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+        HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
+    )
+    val page = PageImpl(holidays, PageRequest.of(0, 20), holidays.size.toLong())
+    given(holidayFacade.findPageByYearAndMonth(any(), any(), any())).willReturn(page)
+
+    // when & then
+    mockMvc.perform(
+        get("/api/holidays/{year}/{month}", 2026, 2)
+            .param("page", "0")
+            .param("size", "20")
+    )
+        .andExpect(status().isOk)
+        .andDo(
+            restDocs.document(
+                pathParameters(
+                    parameterWithName("year").description("조회할 연도"),
+                    parameterWithName("month").description("조회할 월"),
+                ),
+                queryParameters(
+                    *pageRequestFormat().toTypedArray(),
+                ),
+                responseFields(
+                    *responseArrayCommonFieldsSubsection(),
+                    subsectionWithPath("meta.pageInfo").type(JsonFieldType.OBJECT)
+                        .optional().description("페이지 정보"),
+                ),
+                responseFields(
+                    beneathPath("meta.pageInfo").withSubsectionId("data.page"),
+                    *pageCommonFormat().toTypedArray(),
+                ),
+                dataResponseFields(
+                    "id" type NUMBER means "공휴일 ID",
+                    "holidayDate" type DATE means "공휴일 날짜",
+                    "name" type STRING means "공휴일 이름",
+                ),
+            )
+        )
+}
+----
+
+=== GET - 객체 응답 (날짜별 조회)
+
+[source,kotlin]
+----
+@Test
+fun `get holidays by date`(): Unit {
+    // given
+    val response = HolidaysResponse.from(
+        listOf(
+            HolidayInfo(1L, LocalDate.of(2026, 2, 16), "설날"),
+        )
+    )
+    given(holidayFacade.findByDate(2026, 2, 16)).willReturn(response)
+
+    // when & then
+    mockMvc.perform(get("/api/holidays/{year}/{month}/{day}", 2026, 2, 16))
+        .andExpect(status().isOk)
+        .andDo(
+            restDocs.document(
+                pathParameters(
+                    parameterWithName("year").description("조회할 연도"),
+                    parameterWithName("month").description("조회할 월"),
+                    parameterWithName("day").description("조회할 일"),
+                ),
                 responseFields(*responseCommonFieldsSubsection()),
-                // data 필드 별도 정의
                 dataResponseFields(
                     "holidays" type ARRAY means "공휴일 목록",
                     "holidays[].date" type DATE means "공휴일 날짜",
@@ -60,10 +169,6 @@ fun `get holidays by year`(): Unit {
 }
 ----
 
-생성된 스니펫:
-* `get-holidays-by-year/response-fields.adoc` - status, meta 필드
-* `get-holidays-by-year/response-fields-data.adoc` - data 필드
-
 === POST - 단일 객체 응답 (Subsection 전략)
 
 [source,kotlin]
@@ -71,8 +176,8 @@ fun `get holidays by year`(): Unit {
 @Test
 fun `create holiday`(): Unit {
     // given - 단일 객체 응답 설정
-    val holiday = Holiday(1L, LocalDate.of(2026, 1, 1), "신정")
-    given(holidayService.create(any())).willReturn(holiday)
+    val holidayDto = HolidayDto(1L, LocalDate.of(2026, 1, 1), "신정")
+    given(holidayFacade.create(any())).willReturn(holidayDto)
 
     val request = """
         {
@@ -122,11 +227,11 @@ fun `create holiday`(): Unit {
 @Test
 fun `create holidays bulk`(): Unit {
     // given - 배열 응답 설정
-    val holidays = listOf(
-        Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
-        Holiday(2L, LocalDate.of(2026, 2, 17), "설날"),
+    val holidayDtos = listOf(
+        HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+        HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
     )
-    given(holidayService.createAll(any())).willReturn(holidays)
+    given(holidayFacade.createAll(any())).willReturn(holidayDtos)
 
     val request = """
         {
@@ -177,8 +282,8 @@ fun `create holidays bulk`(): Unit {
 @Test
 fun `update holiday`(): Unit {
     // given
-    val holiday = Holiday(1L, LocalDate.of(2026, 2, 16), "설날 (수정)")
-    given(holidayService.update(any(), any())).willReturn(holiday)
+    val holidayDto = HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날 (수정)")
+    given(holidayFacade.update(any(), any())).willReturn(holidayDto)
 
     val request = """
         {
@@ -223,7 +328,7 @@ fun `update holiday`(): Unit {
 @Test
 fun `delete holiday`(): Unit {
     // given
-    doNothing().`when`(holidayService).delete(any())
+    doNothing().`when`(holidayFacade).delete(any())
 
     // when & then
     mockMvc.perform(delete("/api/holidays/{id}", 1L))
@@ -265,9 +370,30 @@ build/generated-snippets/
 build/generated-snippets/
 ├── get-holidays-by-year/
 │   ├── path-parameters.adoc
+│   ├── query-parameters.adoc
+│   ├── response-fields.adoc
+│   ├── response-fields-data.page.adoc
+│   └── response-fields-data.adoc
+├── get-holidays-by-year-and-month/
+│   ├── path-parameters.adoc
+│   ├── query-parameters.adoc
+│   ├── response-fields.adoc
+│   ├── response-fields-data.page.adoc
+│   └── response-fields-data.adoc
+├── get-holidays-by-date/
+│   ├── path-parameters.adoc
 │   ├── response-fields.adoc
 │   └── response-fields-data.adoc
 ├── create-holiday/
+│   ├── request-fields.adoc
+│   ├── response-fields.adoc
+│   └── response-fields-data.adoc
+├── create-holidays-bulk/
+│   ├── request-fields.adoc
+│   ├── response-fields.adoc
+│   └── response-fields-data.adoc
+├── update-holiday/
+│   ├── path-parameters.adoc
 │   ├── request-fields.adoc
 │   ├── response-fields.adoc
 │   └── response-fields-data.adoc

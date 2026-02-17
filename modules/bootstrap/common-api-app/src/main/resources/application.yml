@@ -9,9 +9,13 @@ spring:
       embed: embed, local
     include: common-web, infrastructure
 
+  docker:
+    compose:
+      enabled: false
+
   threads:
     virtual:
-      enabled: false
+      enabled: true
 
 # server
 server:

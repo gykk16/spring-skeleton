@@ -3,7 +3,7 @@
 dependencies {
     val developmentOnly by configurations
 
-    implementation(project(":modules:application:common-application"))
+    implementation(project(":modules:domain"))
 
     // Development
     developmentOnly(rootProject.libs.spring.boot.docker.compose)

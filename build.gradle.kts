@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.spring.dependency.management) apply true
 }
 
-val javaVersion = JavaVersion.VERSION_21
+val javaVersion = JavaVersion.VERSION_25
 val targetGradleVersion = "9.2.1"
 
 // =============================================================================
@@ -62,12 +62,13 @@ subprojects {
                 "-Xemit-jvm-type-annotations",
                 "-java-parameters"
             )
-            jvmTarget = JvmTarget.JVM_21
+            jvmTarget = JvmTarget.JVM_25
         }
     }
 
     // Test Configuration
     tasks.withType<Test> {
+        jvmArgs("--enable-native-access=ALL-UNNAMED")
         useJUnitPlatform()
         testLogging {
             events("passed", "skipped", "failed")
@@ -120,6 +121,10 @@ configure(subprojects.filter { it.name.endsWith("-app") }) {
         archiveClassifier.set("boot")
     }
 
+    tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+        jvmArgs("--enable-native-access=ALL-UNNAMED")
+    }
+
     tasks.named<Jar>("jar") {
         enabled = false
     }
@@ -128,6 +133,7 @@ configure(subprojects.filter { it.name.endsWith("-app") }) {
         val implementation by configurations
         implementation(project(":modules:common-web"))
         implementation(project(":modules:infrastructure"))
+        implementation(project(":modules:domain"))
     }
 }
 

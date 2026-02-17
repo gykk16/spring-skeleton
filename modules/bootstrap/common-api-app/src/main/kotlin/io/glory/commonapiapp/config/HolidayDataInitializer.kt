@@ -1,24 +1,27 @@
 package io.glory.commonapiapp.config
 
-import io.glory.commonapplication.service.HolidayService
-import io.glory.domain.holiday.CreateHolidayRequest
+import io.glory.domain.holiday.dto.CreateHolidayRequest
+import io.glory.domain.holiday.application.HolidayCommandApplication
+import io.glory.domain.holiday.application.HolidayQueryApplication
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
 @Component
 @Profile("local")
 class HolidayDataInitializer(
-    private val holidayService: HolidayService,
+    private val holidayQueryApplication: HolidayQueryApplication,
+    private val holidayCommandApplication: HolidayCommandApplication,
 ) : ApplicationRunner {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun run(args: ApplicationArguments) {
-        if (holidayService.findByYear(2026).isNotEmpty()) {
+        if (holidayQueryApplication.findPageByYear(2026, PageRequest.of(0, 1)).totalElements > 0) {
             log.info("Holiday data already exists, skipping initialization")
             return
         }
@@ -63,7 +66,7 @@ class HolidayDataInitializer(
             CreateHolidayRequest(LocalDate.of(2026, 12, 25), "성탄절"),
         )
 
-        holidayService.createAll(holidays)
+        holidayCommandApplication.createAll(holidays)
         log.info("Initialized {} holiday records for 2026", holidays.size)
     }
 }

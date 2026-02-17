@@ -14,7 +14,7 @@ Libraries without explicit versions are managed by Spring Boot BOM.
 | Library | Version | Release URL
 
 | Kotlin
-| 2.3.0
+| 2.3.10
 | https://github.com/JetBrains/kotlin/releases
 
 | Kotlinx Coroutines
@@ -52,11 +52,11 @@ Libraries without explicit versions are managed by Spring Boot BOM.
 | Library | Version | Release URL
 
 | libphonenumber
-| 9.0.22
+| 9.0.23
 | https://github.com/google/libphonenumber/releases
 
 | Slack API
-| 1.46.0
+| 1.47.0
 | https://github.com/slackapi/java-slack-sdk/releases
 
 | Apache POI
@@ -68,19 +68,19 @@ Libraries without explicit versions are managed by Spring Boot BOM.
 | https://github.com/OpenFeign/querydsl/releases
 
 | Redisson
-| 4.1.0
+| 4.2.0
 | https://github.com/redisson/redisson/releases
 
 | LZ4 Java
-| 1.10.2
+| 1.10.3
 | https://github.com/yawkat/lz4-java/releases/
 
 | Kotest
-| 6.0.7
+| 6.1.3
 | https://github.com/kotest/kotest/releases
 
 | MockK
-| 1.14.2
+| 1.14.9
 | https://github.com/mockk/mockk/releases
 
 | Mockito Kotlin
@@ -90,10 +90,6 @@ Libraries without explicit versions are managed by Spring Boot BOM.
 | SpringDoc OpenAPI
 | 3.0.1
 | https://github.com/springdoc/springdoc-openapi/releases
-
-| SpringDoc OpenAPI Kotlin
-| 1.8.0
-| https://github.com/springdoc/springdoc-openapi-kotlin/releases
 
 |===
 

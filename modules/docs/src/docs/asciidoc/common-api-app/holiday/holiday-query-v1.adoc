@@ -42,12 +42,18 @@ include::{snippets}/holiday-controller-docs-test/get holidays by year/http-reque
 .Path Parameters
 include::{snippets}/holiday-controller-docs-test/get holidays by year/path-parameters.adoc[]
 
+.Query Parameters
+include::{snippets}/holiday-controller-docs-test/get holidays by year/query-parameters.adoc[]
+
 ==== Http Response
 
 include::{snippets}/holiday-controller-docs-test/get holidays by year/http-response.adoc[]
 
 .Response Fields `data`
 include::{snippets}/holiday-controller-docs-test/get holidays by year/response-fields-data.adoc[]
+
+.Page Fields
+include::{snippets}/holiday-controller-docs-test/get holidays by year/response-fields-data.page.adoc[]
 
 '''
 
@@ -66,12 +72,18 @@ include::{snippets}/holiday-controller-docs-test/get holidays by year and month/
 .Path Parameters
 include::{snippets}/holiday-controller-docs-test/get holidays by year and month/path-parameters.adoc[]
 
+.Query Parameters
+include::{snippets}/holiday-controller-docs-test/get holidays by year and month/query-parameters.adoc[]
+
 ==== Http Response
 
 include::{snippets}/holiday-controller-docs-test/get holidays by year and month/http-response.adoc[]
 
 .Response Fields `data`
 include::{snippets}/holiday-controller-docs-test/get holidays by year and month/response-fields-data.adoc[]
+
+.Page Fields
+include::{snippets}/holiday-controller-docs-test/get holidays by year and month/response-fields-data.page.adoc[]
 
 '''
 

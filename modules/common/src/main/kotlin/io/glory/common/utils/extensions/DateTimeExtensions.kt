@@ -2,8 +2,10 @@
 
 package io.glory.common.utils.extensions
 
-import java.time.LocalDate
-import java.time.Period
+import java.time.*
+
+private val KST = ZoneId.of("Asia/Seoul")
+private val UTC = ZoneId.of("UTC")
 
 /**
  * @return true if this date is today
@@ -50,3 +52,23 @@ fun LocalDate.getAge(targetDate: LocalDate = LocalDate.now()): Int {
 fun LocalDate.getKoreanAge(targetDate: LocalDate = LocalDate.now()): Int {
     return targetDate.year - this.year + 1
 }
+
+/**
+ * @return UTC 기준 LocalDateTime을 KST LocalDateTime으로 변환합니다.
+ */
+fun LocalDateTime.toKst(): LocalDateTime = this.atZone(UTC).withZoneSameInstant(KST).toLocalDateTime()
+
+/**
+ * @return UTC 기준 ZonedDateTime을 KST ZonedDateTime으로 변환합니다.
+ */
+fun ZonedDateTime.toKst(): ZonedDateTime = this.withZoneSameInstant(KST)
+
+/**
+ * @return KST 기준 LocalDateTime을 UTC LocalDateTime으로 변환합니다.
+ */
+fun LocalDateTime.toUtc(): LocalDateTime = this.atZone(KST).withZoneSameInstant(UTC).toLocalDateTime()
+
+/**
+ * @return KST 기준 ZonedDateTime을 UTC ZonedDateTime으로 변환합니다.
+ */
+fun ZonedDateTime.toUtc(): ZonedDateTime = this.withZoneSameInstant(UTC)

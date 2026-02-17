@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test
 
 class MyControllerDocsTest : RestDocsSupport() {
 
-    private val myService: MyService = mock()
+    private val myFacade: MyFacade = mock()
 
-    override fun initController(): Any = MyController(myService)
+    override fun initController(): Any = MyController(myFacade)
 
     @Test
     fun `should document my endpoint`(): Unit {
@@ -39,10 +39,11 @@ class MyControllerDocsTest : RestDocsSupport() {
 fun `get holidays by year`(): Unit {
     // given - 서비스 동작 설정
     val holidays = listOf(
-        Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
-        Holiday(2L, LocalDate.of(2026, 2, 17), "설날"),
+        HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+        HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
     )
-    given(holidayService.findByYear(2026)).willReturn(holidays)
+    val page = PageImpl(holidays, PageRequest.of(0, 20), holidays.size.toLong())
+    given(holidayFacade.findPageByYear(any(), any())).willReturn(page)
 
     // 이어서 when/then 작성...
 }
@@ -55,7 +56,8 @@ fun `get holidays by year`(): Unit {
 // when & then
 mockMvc.perform(
     get("/api/holidays/{year}", 2026)
-        .contentType(MediaType.APPLICATION_JSON)
+        .param("page", "0")
+        .param("size", "20")
 )
     .andExpect(status().isOk)
     .andDo(
@@ -72,12 +74,19 @@ mockMvc.perform(
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 
-mockMvc.perform(get("/api/holidays/{year}", 2026))
+mockMvc.perform(
+    get("/api/holidays/{year}", 2026)
+        .param("page", "0")
+        .param("size", "20")
+)
     .andExpect(status().isOk)
     .andDo(
         restDocs.document(
             pathParameters(
                 parameterWithName("year").description("조회할 연도"),
+            ),
+            queryParameters(
+                *pageRequestFormat().toTypedArray(),
             ),
             // ...
         )

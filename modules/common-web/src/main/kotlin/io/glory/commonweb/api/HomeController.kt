@@ -1,11 +1,13 @@
 package io.glory.commonweb.api
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.glory.common.utils.extensions.toKst
 import io.glory.commonweb.utils.EnvironmentUtil
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -19,7 +21,8 @@ class HomeController(
 ) {
 
     @RequestMapping(method = [RequestMethod.GET, RequestMethod.POST])
-    fun home() = "application name = $name , version = $version , profile = ${environmentUtil.activeProfile()}"
+    fun home() =
+        "application name = $name , version = $version , profile = ${environmentUtil.activeProfile()}, now = ${LocalDateTime.now().toKst()}"
 
     init {
         logger.info { "# ==> ${this.javaClass.simpleName} initialized" }

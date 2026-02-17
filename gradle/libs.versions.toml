@@ -8,22 +8,21 @@ spring-boot = "4.0.2"
 spring-cloud = "2025.1.1"
 
 # Kotlin
-java = "21"
-kotlin = "2.3.0"
+java = "25"
+kotlin = "2.3.10"
 kotlinx-coroutines = "1.10.2"
 kotlin-logging = "7.0.13"
 
 # Third-party (not managed by Spring BOM)
-libphonenumber = "9.0.22"
-slack-api = "1.46.0"
+libphonenumber = "9.0.23"
+slack-api = "1.47.0"
 poi = "5.5.1"
 querydsl = "7.1"
-redisson = "4.1.0"
-lz4 = "1.10.2"
-kotest = "6.0.7"
+redisson = "4.2.0"
+lz4 = "1.10.3"
+kotest = "6.1.3"
 springdoc = "3.0.1"
-springdoc-kotlin = "1.8.0"
-mockk = "1.14.2"
+mockk = "1.14.9"
 
 # ####################
 # 라이브러리 정의
@@ -49,6 +48,8 @@ spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring-boot" }
 spring-boot-starter-opentelemetry = { module = "org.springframework.boot:spring-boot-starter-opentelemetry", version.ref = "spring-boot" }
 spring-boot-starter-restclient = { module = "org.springframework.boot:spring-boot-starter-restclient", version.ref = "spring-boot" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "spring-boot" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "spring-boot" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring-boot" }
 spring-boot-restclient = { module = "org.springframework.boot:spring-boot-restclient", version.ref = "spring-boot" }
 spring-boot-micrometer-tracing-brave = { module = "org.springframework.boot:spring-boot-micrometer-tracing-brave", version.ref = "spring-boot" }
@@ -94,7 +95,6 @@ lombok = { module = "org.projectlombok:lombok" }
 
 # Documentation
 springdoc-openapi-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
-springdoc-openapi-kotlin = { module = "org.springdoc:springdoc-openapi-kotlin", version.ref = "springdoc-kotlin" }
 
 # Monitoring & Metrics (managed by Spring BOM)
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
@@ -180,6 +180,11 @@ test-fixtures = [
     "kotest-extensions-spring",
     "mockito-kotlin",
     "mockk",
+]
+
+spring-security = [
+    "spring-boot-starter-security",
+    "spring-boot-starter-oauth2-resource-server",
 ]
 
 openapi = [

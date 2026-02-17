@@ -13,6 +13,9 @@ dependencies {
     val annotationProcessor by configurations
     val runtimeOnly by configurations
 
+    // Domain module
+    api(project(":modules:domain"))
+
     // Spring Boot (for EntityScan annotation)
     implementation(rootProject.libs.spring.boot.starter)
 
@@ -35,22 +38,7 @@ dependencies {
 
     // Database
     runtimeOnly(rootProject.libs.h2)
-
-    // QueryDSL Annotation Processor
-    annotationProcessor(rootProject.libs.querydsl.apt.get().toString() + ":jakarta")
-    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
-    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
-}
-
-// QueryDSL Q-class generation path
-val querydslDir: Provider<Directory> = layout.buildDirectory.dir("generated/source/kapt/main")
-
-configure<JavaPluginExtension> {
-    sourceSets {
-        getByName("main") {
-            java.srcDir(querydslDir)
-        }
-    }
+    runtimeOnly(rootProject.libs.mysql)
 }
 
 // Pass system properties to tests (for benchmark tests)

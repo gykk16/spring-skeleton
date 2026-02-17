@@ -112,8 +112,8 @@ responseFields(
 [source,kotlin]
 ----
 // given - 모의 데이터
-val holiday = Holiday(1L, LocalDate.of(2026, 1, 1), "신정")
-given(holidayService.create(any())).willReturn(holiday)
+val holidayDto = HolidayDto(1L, LocalDate.of(2026, 1, 1), "신정")
+given(holidayFacade.create(any())).willReturn(holidayDto)
 
 // 문서화 - 모의 데이터와 일치
 dataResponseFields(
@@ -130,8 +130,8 @@ dataResponseFields(
 // Good: 성공 케이스만 문서화
 @Test
 fun `create holiday`(): Unit {
-    val holiday = Holiday(1L, LocalDate.of(2026, 1, 1), "신정")
-    given(holidayService.create(any())).willReturn(holiday)
+    val holidayDto = HolidayDto(1L, LocalDate.of(2026, 1, 1), "신정")
+    given(holidayFacade.create(any())).willReturn(holidayDto)
     mockMvc.perform(post("/api/holidays")...)
 }
 
@@ -402,4 +402,4 @@ modules/docs/build/docs/
 
 ---
 
-**최종 업데이트**: 2026-02-06
+**최종 업데이트**: 2026-02-13

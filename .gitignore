@@ -17,4 +17,5 @@ gradle/wrapper/gradle-wrapper.jar
 Thumbs.db
 
 # Tools
-.omc/
+.omc/*
+!.omc/skills/

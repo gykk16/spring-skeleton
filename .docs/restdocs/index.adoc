@@ -5,7 +5,7 @@
 :toc: left
 :toclevels: 2
 :sectnums:
-:last-verified: 2026-02-06
+:last-verified: 2026-02-13
 
 이 문서는 프로젝트의 REST Docs 테스트 작성 방법과 API 문서 생성 전략을 설명합니다.
 
@@ -36,14 +36,14 @@
 ----
 class MyControllerDocsTest : RestDocsSupport() {
 
-    private val myService: MyService = mock()
+    private val myFacade: MyFacade = mock()
 
-    override fun initController(): Any = MyController(myService)
+    override fun initController(): Any = MyController(myFacade)
 
     @Test
     fun `get my resource`(): Unit {
         // given
-        given(myService.findById(1L)).willReturn(MyResource(1L, "name"))
+        given(myFacade.findById(1L)).willReturn(MyResource(1L, "name"))
 
         // when & then
         mockMvc.perform(get("/api/resources/{id}", 1L))
@@ -88,4 +88,4 @@ modules/docs/build/docs/
 
 ---
 
-**최종 업데이트**: 2026-02-06
+**최종 업데이트**: 2026-02-13

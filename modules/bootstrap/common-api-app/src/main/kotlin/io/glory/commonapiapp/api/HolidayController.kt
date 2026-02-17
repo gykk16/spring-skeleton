@@ -1,96 +1,95 @@
 package io.glory.commonapiapp.api
 
-import io.glory.commonapiapp.api.dto.BulkCreateHolidayApiRequest
-import io.glory.commonapiapp.api.dto.CreateHolidayApiRequest
-import io.glory.commonapiapp.api.dto.HolidayDto
-import io.glory.commonapiapp.api.dto.HolidaysResponse
-import io.glory.commonapiapp.api.dto.UpdateHolidayApiRequest
-import io.glory.commonapplication.service.HolidayService
+import io.glory.commonapiapp.dto.request.BulkCreateHolidayApiRequest
+import io.glory.commonapiapp.dto.request.CreateHolidayApiRequest
+import io.glory.commonapiapp.dto.request.UpdateHolidayApiRequest
+import io.glory.commonapiapp.dto.response.HolidayDto
+import io.glory.commonapiapp.dto.response.HolidaysResponse
+import io.glory.commonapiapp.facade.HolidayFacade
 import io.glory.commonweb.response.resource.ApiResource
-import io.glory.domain.holiday.CreateHolidayRequest
-import io.glory.domain.holiday.UpdateHolidayRequest
+import io.glory.domain.holiday.dto.CreateHolidayRequest
+import io.glory.domain.holiday.dto.UpdateHolidayRequest
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/holidays")
+@Validated
 class HolidayController(
-    private val holidayService: HolidayService,
+    private val holidayFacade: HolidayFacade,
 ) {
 
     @GetMapping("/{year}")
-    fun getByYear(@PathVariable year: Int): ResponseEntity<ApiResource<HolidaysResponse>> {
-        val holidays = holidayService.findByYear(year)
-        return ApiResource.success(HolidaysResponse.from(holidays))
+    fun getByYear(
+        @PathVariable @Min(1900) @Max(2100) year: Int,
+        pageable: Pageable = Pageable.ofSize(10),
+    ): ResponseEntity<ApiResource<List<HolidayDto>>> {
+        return ApiResource.ofPage(holidayFacade.findPageByYear(year, pageable))
     }
 
     @GetMapping("/{year}/{month}")
     fun getByYearAndMonth(
-        @PathVariable year: Int,
-        @PathVariable month: Int,
-    ): ResponseEntity<ApiResource<HolidaysResponse>> {
-        val holidays = holidayService.findByYearAndMonth(year, month)
-        return ApiResource.success(HolidaysResponse.from(holidays))
+        @PathVariable @Min(1900) @Max(2100) year: Int,
+        @PathVariable @Min(1) @Max(12) month: Int,
+        pageable: Pageable = Pageable.ofSize(10),
+    ): ResponseEntity<ApiResource<List<HolidayDto>>> {
+        return ApiResource.ofPage(holidayFacade.findPageByYearAndMonth(year, month, pageable))
     }
 
     @GetMapping("/{year}/{month}/{day}")
     fun getByDate(
-        @PathVariable year: Int,
-        @PathVariable month: Int,
-        @PathVariable day: Int,
+        @PathVariable @Min(1900) @Max(2100) year: Int,
+        @PathVariable @Min(1) @Max(12) month: Int,
+        @PathVariable @Min(1) @Max(31) day: Int,
     ): ResponseEntity<ApiResource<HolidaysResponse>> {
-        val holidays = holidayService.findByDate(year, month, day)
-        return ApiResource.success(HolidaysResponse.from(holidays))
+        return ApiResource.success(holidayFacade.findByDate(year, month, day))
     }
 
     @PostMapping
-    fun create(@RequestBody request: CreateHolidayApiRequest): ResponseEntity<ApiResource<HolidayDto>> {
-        val holiday = holidayService.create(
+    fun create(@Valid @RequestBody request: CreateHolidayApiRequest): ResponseEntity<ApiResource<HolidayDto>> {
+        val holiday = holidayFacade.create(
             CreateHolidayRequest(
                 holidayDate = request.holidayDate,
                 name = request.name,
             )
         )
-        return ApiResource.success(HolidayDto.from(holiday))
+        return ApiResource.success(holiday)
     }
 
     @PostMapping("/bulk")
-    fun createBulk(@RequestBody request: BulkCreateHolidayApiRequest): ResponseEntity<ApiResource<List<HolidayDto>>> {
+    fun createBulk(@Valid @RequestBody request: BulkCreateHolidayApiRequest): ResponseEntity<ApiResource<List<HolidayDto>>> {
         val requests = request.holidays.map {
             CreateHolidayRequest(
                 holidayDate = it.holidayDate,
                 name = it.name,
             )
         }
-        val holidays = holidayService.createAll(requests)
-        return ApiResource.success(holidays.map { HolidayDto.from(it) })
+        return ApiResource.success(holidayFacade.createAll(requests))
     }
 
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: Long,
-        @RequestBody request: UpdateHolidayApiRequest,
+        @Valid @RequestBody request: UpdateHolidayApiRequest,
     ): ResponseEntity<ApiResource<HolidayDto>> {
-        val holiday = holidayService.update(
+        val holiday = holidayFacade.update(
             id,
             UpdateHolidayRequest(
                 holidayDate = request.holidayDate,
                 name = request.name,
             )
         )
-        return ApiResource.success(HolidayDto.from(holiday))
+        return ApiResource.success(holiday)
     }
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long): ResponseEntity<ApiResource<String>> {
-        holidayService.delete(id)
+        holidayFacade.delete(id)
         return ApiResource.success()
     }
 }

@@ -68,26 +68,65 @@ class MaskingExtTest : FunSpec({
     }
 
     context("maskName") {
-        test("should return *** for empty or single char names") {
+        test("return *** for blank names") {
             "".maskName() shouldBe "***"
-            "홍".maskName() shouldBe "***"
-            "A".maskName() shouldBe "***"
+            "   ".maskName() shouldBe "***"
         }
 
-        test("should show first char + * for 2-char names") {
-            "홍길".maskName() shouldBe "홍*"
-            "AB".maskName() shouldBe "A*"
+        context("Korean names") {
+            test("show first char + * for 2-char names") {
+                "홍길".maskName() shouldBe "홍*"
+            }
+
+            test("mask middle chars for 3+ char names") {
+                "홍길동".maskName() shouldBe "홍*동"
+                "홍길동수".maskName() shouldBe "홍**수"
+            }
+
+            test("return *** for single char names") {
+                "홍".maskName() shouldBe "***"
+            }
+
+            test("custom mask character") {
+                "홍길동".maskName(maskChar = '#') shouldBe "홍#동"
+            }
         }
 
-        test("should mask middle chars for 3+ char names") {
-            "홍길동".maskName() shouldBe "홍*동"
-            "홍길동수".maskName() shouldBe "홍**수"
-            "John".maskName() shouldBe "J**n"
-            "Alice".maskName() shouldBe "A***e"
+        context("English names") {
+            test("single word: show first 2 chars + mask") {
+                "John".maskName() shouldBe "Jo**"
+                "Alice".maskName() shouldBe "Al***"
+            }
+
+            test("single word: show first char + * for 2-char") {
+                "Jo".maskName() shouldBe "J*"
+            }
+
+            test("single word: return *** for single char") {
+                "J".maskName() shouldBe "***"
+            }
+
+            test("multi-word: mask first names, show last name") {
+                "John Hong".maskName() shouldBe "**** Hong"
+                "John Michael Hong".maskName() shouldBe "**** ******* Hong"
+            }
+
+            test("custom mask character") {
+                "John".maskName(maskChar = '#') shouldBe "Jo##"
+                "John Hong".maskName(maskChar = '#') shouldBe "#### Hong"
+            }
         }
 
-        test("should use custom mask character") {
-            "홍길동".maskName('#') shouldBe "홍#동"
+        context("Mixed script detection") {
+            test("Korean chars detected") {
+                "홍 길동".maskName() shouldBe "홍**동"
+            }
+        }
+
+        context("Bug fix verification") {
+            test("leading/trailing spaces handled correctly") {
+                "  A  ".maskName() shouldBe "***"
+            }
         }
     }
 
@@ -117,5 +156,4 @@ class MaskingExtTest : FunSpec({
             "user@example.com".maskEmail(2, '#') shouldBe "us##@example.com"
         }
     }
-
 })

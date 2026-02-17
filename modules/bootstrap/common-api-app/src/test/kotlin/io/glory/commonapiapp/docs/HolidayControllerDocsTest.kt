@@ -1,17 +1,19 @@
 package io.glory.commonapiapp.docs
 
 import io.glory.commonapiapp.api.HolidayController
-import io.glory.commonapplication.service.HolidayService
-import io.glory.domain.holiday.Holiday
+import io.glory.commonapiapp.dto.response.HolidayDto
+import io.glory.commonapiapp.dto.response.HolidaysResponse
+import io.glory.commonapiapp.facade.HolidayFacade
+import io.glory.domain.holiday.dto.HolidayInfo
 import io.glory.testsupport.restdocs.DocsFieldType.ARRAY
 import io.glory.testsupport.restdocs.DocsFieldType.DATE
 import io.glory.testsupport.restdocs.DocsFieldType.NUMBER
-import io.glory.testsupport.restdocs.DocsFieldType.OBJECT
 import io.glory.testsupport.restdocs.DocsFieldType.STRING
 import io.glory.testsupport.restdocs.RestDocsSupport
 import io.glory.testsupport.restdocs.RestDocsSupport.Companion.dataResponseFields
+import io.glory.testsupport.restdocs.RestDocsSupport.Companion.pageCommonFormat
+import io.glory.testsupport.restdocs.RestDocsSupport.Companion.pageRequestFormat
 import io.glory.testsupport.restdocs.RestDocsSupport.Companion.responseArrayCommonFieldsSubsection
-import io.glory.testsupport.restdocs.RestDocsSupport.Companion.responseCommonFields
 import io.glory.testsupport.restdocs.RestDocsSupport.Companion.responseCommonFieldsSubsection
 import io.glory.testsupport.restdocs.RestDocsSupport.Companion.responseStringCommonFields
 import io.glory.testsupport.restdocs.fields
@@ -21,47 +23,69 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put
+import org.springframework.restdocs.payload.JsonFieldType
+import org.springframework.restdocs.payload.PayloadDocumentation.beneathPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
+import org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDate
 
 class HolidayControllerDocsTest : RestDocsSupport() {
 
-    private val holidayService: HolidayService = mock()
+    private val holidayFacade: HolidayFacade = mock()
 
-    override fun initController(): Any = HolidayController(holidayService)
+    override fun initController(): Any = HolidayController(holidayFacade)
 
     @Test
     fun `get holidays by year`(): Unit {
         // given
         val holidays = listOf(
-            Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
-            Holiday(2L, LocalDate.of(2026, 2, 17), "설날"),
-            Holiday(3L, LocalDate.of(2026, 3, 1), "삼일절"),
+            HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+            HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
+            HolidayDto(3L, LocalDate.of(2026, 3, 1), "삼일절"),
         )
-        given(holidayService.findByYear(2026)).willReturn(holidays)
+        val page = PageImpl(holidays, PageRequest.of(0, 20), holidays.size.toLong())
+        given(holidayFacade.findPageByYear(any(), any())).willReturn(page)
 
         // when & then
-        mockMvc.perform(get("/api/holidays/{year}", 2026))
+        mockMvc.perform(
+            get("/api/holidays/{year}", 2026)
+                .param("page", "0")
+                .param("size", "20")
+        )
             .andExpect(status().isOk)
             .andDo(
                 restDocs.document(
                     pathParameters(
-                        parameterWithName("year").description("조회할 연도"),
+                        parameterWithName("year").description("조회할 연도 (1900~2100)"),
                     ),
-                    responseFields(*responseCommonFieldsSubsection()),
+                    queryParameters(
+                        *pageRequestFormat().toTypedArray(),
+                    ),
+                    responseFields(
+                        *responseArrayCommonFieldsSubsection(),
+                        subsectionWithPath("meta.pageInfo").type(JsonFieldType.OBJECT)
+                            .optional().description("페이지 정보"),
+                    ),
+                    responseFields(
+                        beneathPath("meta.pageInfo").withSubsectionId("data.page"),
+                        *pageCommonFormat().toTypedArray(),
+                    ),
                     dataResponseFields(
-                        "holidays" type ARRAY means "공휴일 목록",
-                        "holidays[].date" type DATE means "공휴일 날짜",
-                        "holidays[].name" type STRING means "공휴일 이름",
+                        "id" type NUMBER means "공휴일 ID",
+                        "holidayDate" type DATE means "공휴일 날짜",
+                        "name" type STRING means "공휴일 이름",
                     ),
                 )
             )
@@ -71,25 +95,41 @@ class HolidayControllerDocsTest : RestDocsSupport() {
     fun `get holidays by year and month`(): Unit {
         // given
         val holidays = listOf(
-            Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
-            Holiday(2L, LocalDate.of(2026, 2, 17), "설날"),
+            HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+            HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
         )
-        given(holidayService.findByYearAndMonth(2026, 2)).willReturn(holidays)
+        val page = PageImpl(holidays, PageRequest.of(0, 20), holidays.size.toLong())
+        given(holidayFacade.findPageByYearAndMonth(any(), any(), any())).willReturn(page)
 
         // when & then
-        mockMvc.perform(get("/api/holidays/{year}/{month}", 2026, 2))
+        mockMvc.perform(
+            get("/api/holidays/{year}/{month}", 2026, 2)
+                .param("page", "0")
+                .param("size", "20")
+        )
             .andExpect(status().isOk)
             .andDo(
                 restDocs.document(
                     pathParameters(
-                        parameterWithName("year").description("조회할 연도"),
-                        parameterWithName("month").description("조회할 월"),
+                        parameterWithName("year").description("조회할 연도 (1900~2100)"),
+                        parameterWithName("month").description("조회할 월 (1~12)"),
                     ),
-                    responseFields(*responseCommonFieldsSubsection()),
+                    queryParameters(
+                        *pageRequestFormat().toTypedArray(),
+                    ),
+                    responseFields(
+                        *responseArrayCommonFieldsSubsection(),
+                        subsectionWithPath("meta.pageInfo").type(JsonFieldType.OBJECT)
+                            .optional().description("페이지 정보"),
+                    ),
+                    responseFields(
+                        beneathPath("meta.pageInfo").withSubsectionId("data.page"),
+                        *pageCommonFormat().toTypedArray(),
+                    ),
                     dataResponseFields(
-                        "holidays" type ARRAY means "공휴일 목록",
-                        "holidays[].date" type DATE means "공휴일 날짜",
-                        "holidays[].name" type STRING means "공휴일 이름",
+                        "id" type NUMBER means "공휴일 ID",
+                        "holidayDate" type DATE means "공휴일 날짜",
+                        "name" type STRING means "공휴일 이름",
                     ),
                 )
             )
@@ -98,10 +138,12 @@ class HolidayControllerDocsTest : RestDocsSupport() {
     @Test
     fun `get holidays by date`(): Unit {
         // given
-        val holidays = listOf(
-            Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
+        val response = HolidaysResponse.from(
+            listOf(
+                HolidayInfo(1L, LocalDate.of(2026, 2, 16), "설날"),
+            )
         )
-        given(holidayService.findByDate(2026, 2, 16)).willReturn(holidays)
+        given(holidayFacade.findByDate(2026, 2, 16)).willReturn(response)
 
         // when & then
         mockMvc.perform(get("/api/holidays/{year}/{month}/{day}", 2026, 2, 16))
@@ -109,9 +151,9 @@ class HolidayControllerDocsTest : RestDocsSupport() {
             .andDo(
                 restDocs.document(
                     pathParameters(
-                        parameterWithName("year").description("조회할 연도"),
-                        parameterWithName("month").description("조회할 월"),
-                        parameterWithName("day").description("조회할 일"),
+                        parameterWithName("year").description("조회할 연도 (1900~2100)"),
+                        parameterWithName("month").description("조회할 월 (1~12)"),
+                        parameterWithName("day").description("조회할 일 (1~31)"),
                     ),
                     responseFields(*responseCommonFieldsSubsection()),
                     dataResponseFields(
@@ -126,8 +168,8 @@ class HolidayControllerDocsTest : RestDocsSupport() {
     @Test
     fun `create holiday`(): Unit {
         // given
-        val holiday = Holiday(1L, LocalDate.of(2026, 1, 1), "신정")
-        given(holidayService.create(any())).willReturn(holiday)
+        val holidayDto = HolidayDto(1L, LocalDate.of(2026, 1, 1), "신정")
+        given(holidayFacade.create(any())).willReturn(holidayDto)
 
         val request = """
             {
@@ -147,8 +189,8 @@ class HolidayControllerDocsTest : RestDocsSupport() {
                 restDocs.document(
                     requestFields(
                         *fields(
-                            "holidayDate" type DATE means "공휴일 날짜",
-                            "name" type STRING means "공휴일 이름",
+                            "holidayDate" type DATE means "공휴일 날짜 (필수)",
+                            "name" type STRING means "공휴일 이름 (필수, 최대 100자)",
                         )
                     ),
                     responseFields(*responseCommonFieldsSubsection()),
@@ -164,11 +206,11 @@ class HolidayControllerDocsTest : RestDocsSupport() {
     @Test
     fun `create holidays bulk`(): Unit {
         // given
-        val holidays = listOf(
-            Holiday(1L, LocalDate.of(2026, 2, 16), "설날"),
-            Holiday(2L, LocalDate.of(2026, 2, 17), "설날"),
+        val holidayDtos = listOf(
+            HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날"),
+            HolidayDto(2L, LocalDate.of(2026, 2, 17), "설날"),
         )
-        given(holidayService.createAll(any())).willReturn(holidays)
+        given(holidayFacade.createAll(any())).willReturn(holidayDtos)
 
         val request = """
             {
@@ -190,9 +232,9 @@ class HolidayControllerDocsTest : RestDocsSupport() {
                 restDocs.document(
                     requestFields(
                         *fields(
-                            "holidays" type ARRAY means "생성할 공휴일 목록",
-                            "holidays[].holidayDate" type DATE means "공휴일 날짜",
-                            "holidays[].name" type STRING means "공휴일 이름",
+                            "holidays" type ARRAY means "생성할 공휴일 목록 (필수, 1개 이상)",
+                            "holidays[].holidayDate" type DATE means "공휴일 날짜 (필수)",
+                            "holidays[].name" type STRING means "공휴일 이름 (필수, 최대 100자)",
                         )
                     ),
                     responseFields(*responseArrayCommonFieldsSubsection()),
@@ -208,8 +250,8 @@ class HolidayControllerDocsTest : RestDocsSupport() {
     @Test
     fun `update holiday`(): Unit {
         // given
-        val holiday = Holiday(1L, LocalDate.of(2026, 2, 16), "설날 (수정)")
-        given(holidayService.update(any(), any())).willReturn(holiday)
+        val holidayDto = HolidayDto(1L, LocalDate.of(2026, 2, 16), "설날 (수정)")
+        given(holidayFacade.update(any(), any())).willReturn(holidayDto)
 
         val request = """
             {
@@ -232,8 +274,8 @@ class HolidayControllerDocsTest : RestDocsSupport() {
                     ),
                     requestFields(
                         *fields(
-                            "holidayDate" type DATE means "공휴일 날짜",
-                            "name" type STRING means "공휴일 이름",
+                            "holidayDate" type DATE means "공휴일 날짜 (필수)",
+                            "name" type STRING means "공휴일 이름 (필수, 최대 100자)",
                         )
                     ),
                     responseFields(*responseCommonFieldsSubsection()),
@@ -249,7 +291,7 @@ class HolidayControllerDocsTest : RestDocsSupport() {
     @Test
     fun `delete holiday`(): Unit {
         // given
-        doNothing().`when`(holidayService).delete(any())
+        doNothing().`when`(holidayFacade).delete(any())
 
         // when & then
         mockMvc.perform(delete("/api/holidays/{id}", 1L))

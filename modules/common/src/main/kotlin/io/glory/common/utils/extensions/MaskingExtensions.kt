@@ -3,7 +3,11 @@
 package io.glory.common.utils.extensions
 
 private const val MASK_CHAR = '*'
-private const val DEFAULT_MASK = "****"
+private const val UNKNOWN_NAME_MASK = "***"
+private const val DEFAULT_VISIBLE_SUFFIX = 4
+
+private fun Char.isHangul(): Boolean =
+    this in '\uAC00'..'\uD7A3' || this in '\u3131'..'\u318E'
 
 /**
  * Masks characters between [start] and [end] indices.
@@ -19,8 +23,10 @@ private const val DEFAULT_MASK = "****"
  * - "1234".mask() -> "****"
  */
 @JvmOverloads
-fun String.mask(start: Int = 0, end: Int = length - 4, maskChar: Char = MASK_CHAR): String {
-    if (length <= 4) return DEFAULT_MASK
+fun String.mask(start: Int = 0, end: Int = length - DEFAULT_VISIBLE_SUFFIX, maskChar: Char = MASK_CHAR): String {
+    if (length <= DEFAULT_VISIBLE_SUFFIX) return buildString(DEFAULT_VISIBLE_SUFFIX) {
+        repeat(DEFAULT_VISIBLE_SUFFIX) { append(maskChar) }
+    }
 
     val safeStart = start.coerceIn(0, length)
     val safeEnd = end.coerceIn(safeStart, length)
@@ -35,28 +41,87 @@ fun String.mask(start: Int = 0, end: Int = length - 4, maskChar: Char = MASK_CHA
 }
 
 /**
- * Masks a name by hiding middle characters.
+ * Masks a name by detecting the script and delegating to the appropriate masking strategy.
  *
  * @param maskChar character to use for masking (default: '*')
  * @return masked name
  *
  * Examples:
  * - "홍길동".maskName() -> "홍*동"
- * - "홍길동수".maskName() -> "홍**수"
- * - "John".maskName() -> "J**n"
- * - "AB".maskName() -> "A*"
- * - "A".maskName() -> "***"
+ * - "John Hong".maskName() -> "**** Hong"
+ * - "John".maskName() -> "Jo**"
  */
 @JvmOverloads
-fun String.maskName(maskChar: Char = MASK_CHAR): String = when (length) {
-    0, 1 -> DEFAULT_MASK.take(3)
+fun String.maskName(maskChar: Char = MASK_CHAR): String {
+    if (isBlank()) return UNKNOWN_NAME_MASK
+
+    return if (any { it.isHangul() }) {
+        maskKoreanName(maskChar)
+    } else {
+        maskEnglishName(maskChar)
+    }
+}
+
+/**
+ * Masks a Korean name by hiding middle characters, showing first and last character.
+ *
+ * @param maskChar character to use for masking
+ * @return masked Korean name
+ *
+ * Examples:
+ * - "홍길동".maskKoreanName() -> "홍*동"
+ * - "홍길동수".maskKoreanName() -> "홍**수"
+ * - "AB".maskKoreanName() -> "A*"
+ * - "A".maskKoreanName() -> "***"
+ */
+private fun String.maskKoreanName(maskChar: Char): String = when (length) {
+    0, 1 -> UNKNOWN_NAME_MASK
     2 -> "${first()}$maskChar"
-    else -> "${first()}${maskChar.toString().repeat(length - 2)}${last()}"
+    else -> buildString(length) {
+        append(this@maskKoreanName.first())
+        repeat(this@maskKoreanName.length - 2) { append(maskChar) }
+        append(this@maskKoreanName.last())
+    }
+}
+
+/**
+ * Masks an English name by hiding first/middle names, showing only the last name.
+ * For single-word names, shows the first two characters and masks the rest.
+ *
+ * @param maskChar character to use for masking
+ * @return masked English name
+ *
+ * Examples:
+ * - "John Hong".maskEnglishName() -> "**** Hong"
+ * - "John Michael Hong".maskEnglishName() -> "**** ******* Hong"
+ * - "John".maskEnglishName() -> "Jo**"
+ * - "Jo".maskEnglishName() -> "J*"
+ * - "J".maskEnglishName() -> "***"
+ */
+private fun String.maskEnglishName(maskChar: Char): String {
+    val parts = trim().split(" ").filter { it.isNotBlank() }
+
+    if (parts.size < 2) {
+        val word = parts[0]
+        return when (word.length) {
+            1 -> UNKNOWN_NAME_MASK
+            2 -> "${word[0]}$maskChar"
+            else -> buildString(word.length) {
+                append(word, 0, 2)
+                repeat(word.length - 2) { append(maskChar) }
+            }
+        }
+    }
+
+    val lastName = parts.last()
+    val maskedFirstNames = parts.dropLast(1).joinToString(" ") { part ->
+        "$maskChar".repeat(part.length)
+    }
+    return "$maskedFirstNames $lastName"
 }
 
 /**
  * Masks digits while preserving non-digit characters (spaces, dashes, etc.).
- * Shows only the last N digits.
  *
  * @param visibleDigits number of digits to show at the end (default: 4)
  * @param maskChar character to use for masking (default: '*')
@@ -73,16 +138,18 @@ fun String.maskDigits(visibleDigits: Int = 4, maskChar: Char = MASK_CHAR): Strin
     if (digitCount <= visibleDigits) return this
 
     val digitsToMask = digitCount - visibleDigits
-    var maskedCount = 0
 
-    return map { char ->
-        if (char.isDigit() && maskedCount < digitsToMask) {
-            maskedCount++
-            maskChar
-        } else {
-            char
+    return buildString(length) {
+        var maskedCount = 0
+        for (char in this@maskDigits) {
+            if (char.isDigit() && maskedCount < digitsToMask) {
+                maskedCount++
+                append(maskChar)
+            } else {
+                append(char)
+            }
         }
-    }.joinToString("")
+    }
 }
 
 /**
@@ -107,8 +174,10 @@ fun String.maskEmail(visibleChars: Int = 2, maskChar: Char = MASK_CHAR): String 
 
     if (localPart.length <= visibleChars) return this
 
-    val maskedLocal = localPart.take(visibleChars) +
-            maskChar.toString().repeat(localPart.length - visibleChars)
-
-    return "$maskedLocal@$domainPart"
+    return buildString(length) {
+        append(localPart, 0, visibleChars)
+        repeat(localPart.length - visibleChars) { append(maskChar) }
+        append('@')
+        append(domainPart)
+    }
 }

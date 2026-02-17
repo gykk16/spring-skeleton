@@ -11,7 +11,6 @@ include(
 
     // Core Business
     "modules:domain",
-    "modules:application:common-application",
 
     // Runtime
     "modules:bootstrap:common-api-app",
